@@ -24,6 +24,7 @@ uint16_t checkcrc(unsigned char *data, unsigned char len) {
 
 #define	TEST_SIMPLE 0
 #define	TEST_RECEIVE 1
+#define TEST_SEND 2
 
 
 #define TEST_TYPE TEST_RECEIVE
@@ -63,6 +64,9 @@ int main(void)
 
 #elif TEST_TYPE == TEST_SEND
 
+		strcpy(buffer, "123456789");
+		slip_append_crc16(buffer, strlen(buffer));
+		serial_send(buffer, 11);
 
 
 #else
