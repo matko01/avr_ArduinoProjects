@@ -68,7 +68,6 @@ int main(void)
 		slip_append_crc16(buffer, strlen(buffer));
 		serial_send(buffer, 11);
 
-
 #else
 #error Uknown test type
 #endif
