@@ -1,5 +1,5 @@
 TARGET=slip_src
-SOURCES=main.c
+SOURCES=main.c 
 
 DEPS=
 COBJ=$(SOURCES:.c=.o)
