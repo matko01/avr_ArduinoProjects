@@ -61,6 +61,10 @@ int main(void)
 				checkcrc((unsigned char *)buffer, size));
 		serial_send(str, strlen(str));
 
+#elif TEST_TYPE == TEST_SEND
+
+
+
 #else
 #error Uknown test type
 #endif
