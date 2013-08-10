@@ -27,11 +27,13 @@ uint16_t checkcrc(unsigned char *data, unsigned char len) {
 #define TEST_SEND 2
 #define TEST_VERIFY 3
 
-#define TEST_TYPE TEST_VERIFY
+#define TEST_TYPE TEST_RECEIVE
 
 int main(void)
 {
 	serial_init(E_BAUD_4800);	
+	serial_install_interrupts();
+	serial_flush();
 
 	while(1) {
 		char str[32] = {0x00};
@@ -43,7 +45,7 @@ int main(void)
 		strcpy(buffer, "123456789");
 	   	snprintf(str, sizeof(str), "CRC: %04x\n", 
 				checkcrc((unsigned char *)buffer, strlen(buffer)));
-		serial_send(str, strlen(str));
+		serial_poll_send(str, strlen(str));
 
 #elif TEST_TYPE == TEST_RECEIVE
 #warning Building Test Receive
@@ -60,7 +62,7 @@ int main(void)
 	   	snprintf(str, sizeof(str), "RECV [%04x], CRC: %04x\r\n", 
 				crc,
 				checkcrc((unsigned char *)buffer, size));
-		serial_send(str, strlen(str));
+		serial_poll_send(str, strlen(str));
 
 #elif TEST_TYPE == TEST_VERIFY
 #warning Building Test Verify
@@ -74,15 +76,15 @@ int main(void)
 				slip_verify_crc16(buffer, size, size - 2) ?
 				"positive" : "negative");
 
-		serial_send(str, strlen(str));
+		serial_poll_send(str, strlen(str));
 
 #elif TEST_TYPE == TEST_SEND
 #warning Building Test Send
 
 		strcpy(buffer, "123456789");
 		slip_append_crc16((unsigned char *)buffer, strlen(buffer));
-		serial_send(buffer, 11);
-		serial_send("\n",1);
+		serial_poll_send(buffer, 11);
+		serial_poll_send("\n",1);
 
 #else
 #error Uknown test type

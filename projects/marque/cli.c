@@ -95,7 +95,7 @@ t_multichar_cmd g_mchar_cmds[] = {
  */
 static void fh_ping(void *a_ctx) {
 	char resp[] = "pong\r\n";
-	serial_send((void *)resp, strlen(resp));
+	serial_poll_send((void *)resp, strlen(resp));
 }
 
 /**
@@ -103,7 +103,7 @@ static void fh_ping(void *a_ctx) {
  */
 static void fh_tomek(void *a_ctx) {
 	char resp[] = "Tomek to daun\r\n";
-	serial_send((void *)resp, strlen(resp));
+	serial_poll_send((void *)resp, strlen(resp));
 }
 
 /**
@@ -115,15 +115,15 @@ static void fh_marque_get(void *a_ctx) {
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "Delay: %d\r\n", m->delay);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "Head: %d\r\n", m->buff->head);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "Current: %d\r\n", m->buff->current);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 }
 
 /**
@@ -132,7 +132,7 @@ static void fh_marque_get(void *a_ctx) {
 static void fh_delay_inc(void *a_ctx) {
 	volatile t_marque *m = marque_get_ctx();
 	marque_set_delay(m->delay + 0x1000);
-	serial_send((void*)"OK", 2);
+	serial_poll_send((void*)"OK", 2);
 }
 
 /**
@@ -142,12 +142,12 @@ static void fh_delay_dec(void *a_ctx) {
 	volatile t_marque *m = marque_get_ctx();
 	unsigned int x = m->delay - 0x1000;
 	marque_set_delay(x > 0x00 ? x : 0x00);
-	serial_send((void*)"OK", 2);
+	serial_poll_send((void*)"OK", 2);
 }
 
 static void fh_clear(void *a_ctx) {
 	marque_clear();
-	serial_send((void*)"OK", 2);
+	serial_poll_send((void*)"OK", 2);
 	serial_flush();
 }
 
@@ -156,8 +156,8 @@ static void fh_help(void *a_ctx) {
 	unsigned char i = 0x00;	
 
 	while (ctx->cmds[i].fh) {
-		serial_send("\r\n", 2);
-		serial_send(ctx->cmds[i].cmd, strlen(ctx->cmds[i].cmd));
+		serial_poll_send("\r\n", 2);
+		serial_poll_send(ctx->cmds[i].cmd, strlen(ctx->cmds[i].cmd));
 		i++;
 	}
 }
@@ -171,23 +171,23 @@ static void fh_serial_get(void *a_ctx) {
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "Head: %d\r\n", sb->head);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "Tail: %d\r\n", sb->head);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "RX Ok: %d\r\n", sb->stats.ok);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 	
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "RX Dropped: %d\r\n", sb->stats.dropped);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
 	snprintf(resp, sizeof(resp), "RX FE: %d\r\n", sb->stats.frame_error);
-	serial_send((void*)resp, strlen(resp));
+	serial_poll_send((void*)resp, strlen(resp));
 }
 
 static void fh_put(void *a_ctx __attribute__((unused))) {
@@ -196,14 +196,14 @@ static void fh_put(void *a_ctx __attribute__((unused))) {
 
 	if (!init) {
 		char str[] = "Type text and it will occur in the marque, <ENTER> to quit\r\n";
-		serial_send(str, strlen(str));
+		serial_poll_send(str, strlen(str));
 		init = 1;
 	}
 
 	if (isprint(ctx->cmd[0])) {
 		ctx->cmd[1] = '\0';
 		marque_print(ctx->cmd);
-		serial_send(ctx->cmd, 1);
+		serial_poll_send(ctx->cmd, 1);
 		return;
 	}
 
@@ -225,8 +225,8 @@ static void _cli_quit_owner(t_cli_ctx *a_ctx) {
 }
 
 static void _cli_prompt(t_cli_ctx *a_ctx __attribute__((unused)), unsigned char nl) {
-	if (nl) serial_send("\r\n", 2);
-	serial_send("#> ", 3);
+	if (nl) serial_poll_send("\r\n", 2);
+	serial_poll_send("#> ", 3);
 }
 
 static unsigned char _cli_interpret_cmd(t_cli_ctx *a_ctx) {
@@ -267,14 +267,14 @@ static void _cli_reinterpret_cmd(t_cli_ctx *a_ctx, unsigned char a_response) {
 	switch(a_response) {
 		case E_CMD_NOT_FOUND: {
 				char str[] = "\r\nCommand not found";
-				serial_send(str, strlen(str));
+				serial_poll_send(str, strlen(str));
 				_cli_history_add(a_ctx);
 			}
 			break;
 
 		case E_CMD_TOO_SHORT: {
 				char str[] = "\r\nCommand too short";
-				serial_send(str, strlen(str));
+				serial_poll_send(str, strlen(str));
 			}
 			break;
 
@@ -304,8 +304,8 @@ static void _cli_history_up(void* a_ctx) {
 		snprintf(prompt, sizeof(prompt), "\r\n(%d/%d)",
 			   	ctx->hpos, CLI_CMD_HISTORY_LEN);
 	
-		serial_send(prompt, strlen(prompt));
-		serial_send(ctx->cmd, strlen(ctx->cmd));
+		serial_poll_send(prompt, strlen(prompt));
+		serial_poll_send(ctx->cmd, strlen(ctx->cmd));
 	}
 }
 
@@ -326,8 +326,8 @@ static void _cli_history_down(void* a_ctx) {
 		snprintf(prompt, sizeof(prompt), "\r\n(%d/%d)",
 			   	ctx->hpos, CLI_CMD_HISTORY_LEN);
 	
-		serial_send(prompt, strlen(prompt));
-		serial_send(ctx->cmd, strlen(ctx->cmd));
+		serial_poll_send(prompt, strlen(prompt));
+		serial_poll_send(ctx->cmd, strlen(ctx->cmd));
 	}
 }
 
@@ -409,7 +409,7 @@ void cli_read() {
 		case 0x7f: // del
 			if (g_cli_ctx.pos) {
 				g_cli_ctx.cmd[g_cli_ctx.pos--] = '\0';
-				serial_send("\b \b", 3);
+				serial_poll_send("\b \b", 3);
 			}
 			break;
 
@@ -421,7 +421,7 @@ void cli_read() {
 		case 0x0d: // new line
 			g_cli_ctx.cmd[POSINC(g_cli_ctx.pos)] = '\0';
 
-			serial_send("\r\n", 2);
+			serial_poll_send("\r\n", 2);
 
 			res = _cli_interpret_cmd(&g_cli_ctx);
 			_cli_reinterpret_cmd(&g_cli_ctx, res);			
@@ -437,7 +437,7 @@ void cli_read() {
 			/* echo */
 			if (g_cli_ctx.pos < (CLI_CMD_BUFFER_SIZE - 1) && isprint(i)) {
 				g_cli_ctx.cmd[g_cli_ctx.pos++] = i;
-				serial_send(&i, 1);
+				serial_poll_send(&i, 1);
 			}
 			break;
 	}

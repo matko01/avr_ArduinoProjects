@@ -29,6 +29,9 @@ static void play(e_timer_pins a_pin, struct note *a_note) {
 int main(void)
 {
 	serial_init(E_BAUD_9600);	
+	serial_install_interrupts();
+	serial_flush();
+
 	beeper_init(PD6_OC0A);
 
 	unsigned char size = 0;

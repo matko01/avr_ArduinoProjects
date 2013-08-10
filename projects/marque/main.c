@@ -36,7 +36,11 @@ int main(void)
 
 	marque_init();	
 	marque_set_delay(0x3500);
+
 	serial_init(E_BAUD_4800);
+	serial_install_interrupts();
+	serial_flush();
+
 	marque_print("HELLO");
 	cli_init();
 
