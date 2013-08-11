@@ -103,22 +103,6 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
 	}
 }
 
-/**
- * @brief timer 0
- *
- * @param TIMER0_COMPB_vect
- */
-ISR(TIMER0_COMPB_vect, ISR_NOBLOCK) {
-	if (!g_tc[PD5_OC0B]) {
-		// MASK the interrupt + disable the clock;		
-		TCCR0B = 0x00;
-		TIMSK0 &= ~_BV(OCIE0B);
-		PORTD &= ~_BV(PORTD5);
-	}
-	else {
-		if (g_tc[PD5_OC0B]) g_tc[PD5_OC0B]--;
-	}
-}
 #endif
 
 /* ================================================================================ */
