@@ -6,11 +6,11 @@ $|++;
 
 use Device::SerialPort;
 use MIDI::ALSA(SND_SEQ_EVENT_PORT_UNSUBSCRIBED);
-# use Digest::CRC qw/crc16/;
+use Digest::CRC qw/crc16/;
 
 my %g_dev = (
 	dev => '/dev/ttyACM0',
-	speed => '9600',
+	speed => '38400',
 );
 
 # midi notes
@@ -158,14 +158,10 @@ sub slip_send {
 			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
 
 	my $size = @data;
-	my $payload = pack "CS${size}", int($size / 2), @data; 
-	
-	# my $crc = pack "S", crc16($payload);
-	my $slip_end = pack "C", SLIP_END;
+	my $notes = int($size/2);
+	my $crc = crc16( pack "CCCS*", (0,0,$notes,@_));
 
-	return $slip_end . $payload . $slip_end;
-
-	# return $slip_end . $crc . $payload . $slip_end;
+	return pack "CSCS${size}C", SLIP_END, $crc, $notes, @data, SLIP_END; 
 }
 
 my $port = new Device::SerialPort($g_dev{dev}); 
@@ -173,7 +169,7 @@ $port->baudrate($g_dev{speed});
 $port->parity("none"); 
 $port->databits(8); 
 $port->stopbits(1); 
-$port->dtr_active(0);
+$port->dtr_active(1);
 $port->write_settings();
 $port->purge_all;
 
@@ -196,7 +192,7 @@ while (1) {
 	# midi event to midi score event
 	my @score_event = MIDI::ALSA::alsa2scoreevent( @alsa_event );
 
-    filter out empty events
+    # filter out empty events
 	next unless (@score_event && defined $score_event[0] && defined $score_event[4]);
 
 	# accept only note events
@@ -209,12 +205,12 @@ while (1) {
 	next unless (scalar @ARGV == 0 || grep { $_ == $score_event[3] } @ARGV );
 
 	# calculate the pitch and duration
-	my $note = int($notes[ (36 + $score_event[4]) % 90 ]);
+	my $note = int($notes[$score_event[4] % 128]);
 	# my $dur = int( $score_event[2]/1000 - 0.5);
-	my $dur = 200;
+	my $dur = 150;
 
-	# send the data to serial port
 	my $send = $port->write(slip_send($note, $dur));
+	while (!$port->write_drain) {}
 
 
 	my ($count_in, $string_in) = $port->read(5);

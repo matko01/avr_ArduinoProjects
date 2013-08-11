@@ -6,7 +6,7 @@
 
 /* ================================================================================ */
 
-static volatile int32_t g_tc[TIMER_PIN_LAST] = {0x00};
+static volatile uint32_t g_tc[TIMER_PIN_LAST] = {0x00};
 
 /* ================================================================================ */
 
@@ -72,7 +72,7 @@ ISR(TIMER1_COMPA_vect) {
  * @param TIMER1_COMPB_vect
  */
 ISR(TIMER1_COMPB_vect) {
-	if (!g_tc[PB2_OC1B]--) {
+	if (!g_tc[PB2_OC1B]) {
 		// MASK the interrupt + disable the clock;		
 		TIMSK1 &= ~_BV(OCIE1B);
 		TCCR1B &= 0xf8;
@@ -92,11 +92,11 @@ ISR(TIMER1_COMPB_vect) {
  *
  * @param TIMER0_COMPA_vect
  */
-ISR(TIMER0_COMPA_vect) {
+ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
 	if (!g_tc[PD6_OC0A]) {
 		// MASK the interrupt + disable the clock;		
-		TIMSK0 &= ~_BV(OCIE0A);
 		TCCR0B = 0x00;
+		TIMSK0 &= ~_BV(OCIE0A);
 		PORTD &= ~_BV(PORTD6);
 	}
 	else {
@@ -109,7 +109,7 @@ ISR(TIMER0_COMPA_vect) {
  *
  * @param TIMER0_COMPB_vect
  */
-ISR(TIMER0_COMPB_vect) {
+ISR(TIMER0_COMPB_vect, ISR_NOBLOCK) {
 	if (!g_tc[PD5_OC0B]) {
 		// MASK the interrupt + disable the clock;		
 		TCCR0B = 0x00;
@@ -262,6 +262,8 @@ void beeper_beep(e_timer_pins a_pin,
 	uint8_t ocrh = 0x00;
 	uint8_t presc = 0x00;
 
+	beeper_off(a_pin);
+
 	// which pin
 	switch(a_pin) {
 
@@ -270,20 +272,21 @@ void beeper_beep(e_timer_pins a_pin,
 			TCCR0B &= 0xf8;
 
 			if (freq) {
-				/* TCCR0A |= a_pin == PD6_OC0A ? 0x40 : 0x10; */
+				TCCR0A |= a_pin == PD6_OC0A ? 0x40 : 0x10;
 				timer8_prescaler(freq, &ocr, &presc);
 
 				TCCR0B |= (presc & 0x07);
 
 				freq = freq < 62 ? 62 : freq;
 				// setup delay counter
-				g_tc[a_pin] = (freq*duration) / 500;
+				g_tc[a_pin] = (uint32_t)((freq*duration) / 500);
+
 			}
 			else {
-				/* TCCR0A &= 0x0f; */
-				/* TCCR0B |= 0x03; */
-				/* ocr = 250; */
-				/* g_tc[a_pin] = duration; */
+				TCCR0A &= 0x0f;
+				TCCR0B |= 0x03;
+				ocr = 250;
+				g_tc[a_pin] = duration;
 			}
 
 			if (PD6_OC0A == a_pin) {
@@ -421,6 +424,7 @@ void beeper_block(e_timer_pins a_pin) {
 
 	if (wait) while (g_tc[a_pin]);
 }
+
 
 void beeper_off(e_timer_pins a_pin) {
 	switch (a_pin) {

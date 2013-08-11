@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 #define TIMER_BEEPER_ISR_0
-// #define TIMER_BEEPER_ISR_1
-// #define TIMER_BEEPER_ISR_2
+#define TIMER_BEEPER_ISR_1
+#define TIMER_BEEPER_ISR_2
 
 typedef enum _e_timer_pins {
 	PD6_OC0A = 0,

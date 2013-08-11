@@ -12,8 +12,9 @@ struct note {
 };
 
 struct packet {
+	uint16_t crc16;
 	unsigned char num;
-	struct note notes[32];
+	struct note notes[4];
 };
 
 static void play(e_timer_pins a_pin, struct note *a_note) {
@@ -26,32 +27,39 @@ static void play(e_timer_pins a_pin, struct note *a_note) {
 	}
 }
 
+#define PIN PD5_OC0B
+
 int main(void)
 {
-	serial_init(E_BAUD_9600);	
+	serial_init(E_BAUD_38400);	
 	serial_install_interrupts();
 	serial_flush();
 
-	beeper_init(PD6_OC0A);
+	beeper_init(PIN);
 
 	unsigned char size = 0;
 	struct packet pack;
 
 	while (1) {
-		if (0 >= (size = slip_recv((void *)&pack, sizeof(pack))))
+
+		if (0 >= (size = slip_recv((void *)&pack, sizeof(pack)))) {
 			continue;
+		}
 
 		// ignore incomplete data chunks
 		if (size < 5) {
 			continue;
 		}
 
-		for (unsigned char i = 0; i < pack.num; i++) {
-			play(PD6_OC0A, &pack.notes[i]);
-			/* serial_send(&size, 1); */
-			/* serial_send(&pack.notes[i].note, 2); */
-			/* serial_send(&pack.notes[i].duration, 2); */
+		// verify if the information is genuine
+		if (!slip_verify_crc16((unsigned char *)&pack, size, 0)) {
+			continue;
+		}
 
+		for (unsigned char i = 0; i < pack.num; i++) {
+			play(PIN, &pack.notes[i]);
+			serial_poll_send(&pack.notes[i].note, 2);
+			serial_poll_send(&pack.notes[i].duration, 2);
 		}
 	}
 
