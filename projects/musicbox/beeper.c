@@ -2,7 +2,6 @@
 
 #include <avr/interrupt.h>
 #include <avr/power.h>
-#include <stdint.h>
 
 /* ================================================================================ */
 
@@ -132,13 +131,11 @@ void beeper_init(e_timer_pins a_pin) {
 	switch (a_pin) {
 		case PD6_OC0A:
 		case PD5_OC0B:
-
 			power_timer0_enable();
 
 			// clock disabled
 			TCCR0B = 0x00;
 			TCNT0 = 0x00;
-
 			if (PD6_OC0A == a_pin) {
 				TCCR0A = 0x42;
 				OCR0A = 0x00;
@@ -149,8 +146,6 @@ void beeper_init(e_timer_pins a_pin) {
 				OCR0B = 0x00;
 				DDRD |= _BV(PORTD5);
 			}
-
-
 			break;
 
 		case PB1_OC1A:
@@ -203,7 +198,7 @@ void beeper_init(e_timer_pins a_pin) {
  * @param a_ocr ocr value returned by reference
  * @param a_prescaler prescaler value returned by reference
  */
-static void timer8_prescaler(uint32_t a_freq, 
+static void _timer8_prescaler(uint32_t a_freq, 
 		uint8_t *a_ocr, 
 		uint8_t *a_prescaler) {
 
@@ -212,7 +207,7 @@ static void timer8_prescaler(uint32_t a_freq,
 	uint8_t pnum = sizeof(prescalers);
 	uint8_t i = 0;
 
-	// small achievable frequency with this timer
+	// smallest achievable frequency with this timer
 	if (a_freq < 62) {
 		*a_prescaler = 5;
 		*a_ocr = 0;
@@ -235,7 +230,7 @@ static void timer8_prescaler(uint32_t a_freq,
  * @param a_ocrl ocr low
  * @param a_prescaler prescaler value
  */
-static void timer16_prescaler(uint32_t a_freq,
+static void _timer16_prescaler(uint32_t a_freq,
 		uint8_t *a_ocrh,
 		uint8_t *a_ocrl,
 		uint8_t *a_prescaler) {
@@ -273,7 +268,7 @@ void beeper_beep(e_timer_pins a_pin,
 
 			if (freq) {
 				TCCR0A |= a_pin == PD6_OC0A ? 0x40 : 0x10;
-				timer8_prescaler(freq, &ocr, &presc);
+				_timer8_prescaler(freq, &ocr, &presc);
 
 				TCCR0B |= (presc & 0x07);
 
@@ -303,7 +298,7 @@ void beeper_beep(e_timer_pins a_pin,
 		case PB2_OC1B:
 			TCCR1B &= 0xf8;
 			if (freq) {
-				timer16_prescaler(freq, &ocrh, &ocr, &presc);
+				_timer16_prescaler(freq, &ocrh, &ocr, &presc);
 				TCCR0A |= (PB1_OC1A == a_pin ? 0x40 : 0x10);
 				TCCR1B |= (presc & 0x07);
 
@@ -334,7 +329,7 @@ void beeper_beep(e_timer_pins a_pin,
 		case PD3_OC2B:
 			TCCR2B &= 0xf8;
 			if (freq) {
-				timer8_prescaler(freq, &ocr, &presc);
+				_timer8_prescaler(freq, &ocr, &presc);
 				TCCR2A |= (a_pin == PB3_OC2A ? 0x40 : 0x10);
 				TCCR2B |= (presc & 0x07);
 
@@ -364,57 +359,33 @@ void beeper_beep(e_timer_pins a_pin,
 	} // switch
 }
 
+
+static uint8_t _beeper_block(e_timer_pins a_pin, volatile uint8_t *timsk, uint8_t map) {
+	if (bit_is_clear(*timsk, map)) {				
+		g_tc[a_pin] = 0x00;
+		return 0;
+	}
+	return 1;
+}
+
 void beeper_block(e_timer_pins a_pin) {
 	unsigned char wait = 0;
 
 	// deadlock protection
 	switch (a_pin) {
 		case PD6_OC0A:
-			if (bit_is_clear(TIMSK0, OCIE0A)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
-			break;
-
 		case PD5_OC0B:
-			if (bit_is_clear(TIMSK0, OCIE0B)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
-			break;
-		
-		case PB1_OC1A:
-			if (bit_is_clear(TIMSK1, OCIE1A)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
+			wait = _beeper_block(a_pin, &TIMSK0, (PD6_OC0A == a_pin ? OCIE0A : OCIE0B));
 			break;
 
+		case PB1_OC1A:
 		case PB2_OC1B:
-			if (bit_is_clear(TIMSK1, OCIE1B)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
+			wait = _beeper_block(a_pin, &TIMSK1, (PB1_OC1A == a_pin ? OCIE1A : OCIE1B));
 			break;
 
 		case PB3_OC2A:
-			if (bit_is_clear(TIMSK2, OCIE2A)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
-			break;
-
 		case PD3_OC2B:
-			if (bit_is_clear(TIMSK2, OCIE2B)) {				
-				g_tc[a_pin] = 0x00;
-				return;
-			}
-			wait = 1;
+			wait = _beeper_block(a_pin, &TIMSK2, (PB3_OC2A == a_pin ? OCIE2A : OCIE2B));
 			break;
 
 		default:
@@ -426,37 +397,39 @@ void beeper_block(e_timer_pins a_pin) {
 }
 
 
+static void _beeper_off(volatile uint8_t *timsk, 
+		volatile uint8_t *tccrb,
+		uint8_t mask,
+		uint8_t tcc) {
+
+	// mask interrupt
+	*timsk &= mask;
+	*tccrb &= tcc;
+}
+
 void beeper_off(e_timer_pins a_pin) {
 	switch (a_pin) {
 
 		case PD6_OC0A:
 		case PD5_OC0B:
-			// mask interrupt
-			TIMSK0 &= (PD6_OC0A == a_pin ? (~_BV(OCIE0A)) : (~_BV(OCIE0B)));
-			TCCR0B = 0x00;
-			g_tc[a_pin] = 0x00;
+			_beeper_off(&TIMSK0, &TCCR0B, (PD6_OC0A == a_pin ? (~_BV(OCIE0A)) : (~_BV(OCIE0B))), 0x00);
 			break;
 
 		case PB1_OC1A:
 		case PB2_OC1B:
-			// mask interrupt
-			TIMSK1 &= (PB1_OC1A == a_pin ? ~_BV(OCIE1A) : ~_BV(OCIE1B));
-			TCCR1B &= 0xf8;
-			g_tc[a_pin] = 0x00;
+			_beeper_off(&TIMSK1, &TCCR1B, (PB1_OC1A == a_pin ? ~_BV(OCIE1A) : ~_BV(OCIE1B)), 0xf8);
 			break;
 
 		case PB3_OC2A:
 		case PD3_OC2B:
-			// mask interrupt
-			TIMSK2 &= (PB3_OC2A == a_pin ? ~_BV(OCIE2A) : ~_BV(OCIE2B));
-			TCCR2B = 0x00;
-			g_tc[a_pin] = 0x00;
+			_beeper_off(&TIMSK2, &TCCR2B, (PB3_OC2A == a_pin ? ~_BV(OCIE2A) : ~_BV(OCIE2B)), 0x00);
 			break;
 
 		default:
-			return;
 			break;
 	} // switch
+
+	g_tc[a_pin] = 0x00;
 }
 
 /* ================================================================================ */

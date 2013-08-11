@@ -16,7 +16,7 @@ LDFLAGS=-lpca -L$(PCA_PREFIX)
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
 ISP=$(ISPDIR)/avrdude
-ISPFLAGS=-c arduino -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avrdude.conf 
+ISPFLAGS=-c arduino -n -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avrdude.conf 
 
 all: $(TARGET)
 
