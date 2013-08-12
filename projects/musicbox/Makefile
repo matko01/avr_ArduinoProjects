@@ -1,6 +1,7 @@
 TARGET=musicbox
 SOURCES=main.c \
 		beeper.c \
+		tdelay_common.c \
 		tdelay.c
 
 DEPS=

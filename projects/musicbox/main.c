@@ -17,7 +17,7 @@ struct packet {
 	struct note notes[4];
 };
 
-static void play(e_timer_pins a_pin, struct note *a_note) {
+static void play(e_timer a_pin, struct note *a_note) {
 	if (a_note->note || a_note->duration) {
 		beeper_beep(a_pin, a_note->note, a_note->duration);
 		beeper_block(a_pin);
@@ -27,7 +27,7 @@ static void play(e_timer_pins a_pin, struct note *a_note) {
 	}
 }
 
-#define PIN PD6_OC0A
+#define PIN E_TIMER0 // PORTD6
 
 int main(void)
 {
