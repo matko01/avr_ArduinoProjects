@@ -166,7 +166,7 @@ static void fh_help(void *a_ctx) {
  * @brief get serial port informations
  */
 static void fh_serial_get(void *a_ctx) {
-	volatile t_buffer *sb = serial_get_state();
+	volatile t_buffer *sb = serial_get_rx_state();
 	char resp[16] = {0x00};
 
 	memset(resp, 0x00, sizeof(resp));

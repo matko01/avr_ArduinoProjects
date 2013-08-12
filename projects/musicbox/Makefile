@@ -32,6 +32,7 @@ $(TARGET): $(COBJ) libpca.a
 	@echo -e "\tLINKING CC" $<
 	@$(CC) -mmcu=$(MCU) -o $(TARGET) $(COBJ) $(LDFLAGS)
 	$(OBJC) -O ihex -R .eeprom $(TARGET) $(TARGET).hex
+	$(OBJC) -O binary -R .eeprom $(TARGET) $(TARGET).bin
 
 clean:
 	$(MAKE) -C $(PCA_PREFIX) clean

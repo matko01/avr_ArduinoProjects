@@ -27,12 +27,12 @@ static void play(e_timer_pins a_pin, struct note *a_note) {
 	}
 }
 
-#define PIN PD5_OC0B
+#define PIN PD6_OC0A
 
 int main(void)
 {
 	serial_init(E_BAUD_38400);	
-	serial_install_interrupts();
+	serial_install_interrupts(SERIAL_RX_INTERRUPT);
 	serial_flush();
 
 	beeper_init(PIN);

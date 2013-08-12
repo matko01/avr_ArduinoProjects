@@ -1,7 +1,7 @@
 #ifndef __BEEPER_H__
 #define __BEEPER_H__
 
-#include <stdint.h>
+#include "common.h"
 
 #define TIMER_BEEPER_ISR_0
 #define TIMER_BEEPER_ISR_1
@@ -9,11 +9,8 @@
 
 typedef enum _e_timer_pins {
 	PD6_OC0A = 0,
-	PD5_OC0B,
 	PB1_OC1A,
-	PB2_OC1B,
 	PB3_OC2A,
-	PD3_OC2B,
 
 	TIMER_PIN_LAST
 } e_timer_pins;

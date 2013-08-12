@@ -16,7 +16,7 @@ static volatile uint32_t g_tc[TIMER_PIN_LAST] = {0x00};
  *
  * @param TIMER2_COMPA_vect
  */
-ISR(TIMER2_COMPA_vect) {
+ISR(TIMER2_COMPA_vect, ISR_NOBLOCK) {
 	if (!g_tc[PB3_OC2A]) {
 		// MASK the interrupt + disable the clock;		
 		TIMSK2 &= ~_BV(OCIE2A);
@@ -28,23 +28,8 @@ ISR(TIMER2_COMPA_vect) {
 	}
 }
 
-/**
- * @brief timer 2
- *
- * @param TIMER2_COMPB_vect
- */
-ISR(TIMER2_COMPB_vect) {
-	if (!g_tc[PD3_OC2B]) {
-		// MASK the interrupt + disable the clock;		
-		TIMSK2 &= ~_BV(OCIE2B);
-		TCCR2B = 0x00;
-		PORTD &= ~_BV(PORTD3);
-	}
-	else {
-		if (g_tc[PD3_OC2B]) g_tc[PD3_OC2B]--; 
-	}
-}
 #endif
+
 
 
 #ifdef TIMER_BEEPER_ISR_1
@@ -53,7 +38,7 @@ ISR(TIMER2_COMPB_vect) {
  *
  * @param TIMER1_COMPA_vect
  */
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect, ISR_NOBLOCK) {
 	if (!g_tc[PB1_OC1A]) {
 		// MASK the interrupt + disable the clock;		
 		TIMSK1 &= ~_BV(OCIE1B);
@@ -65,23 +50,6 @@ ISR(TIMER1_COMPA_vect) {
 	}
 }
 
-/**
- * @brief timer 1
- *
- * @param TIMER1_COMPB_vect
- */
-ISR(TIMER1_COMPB_vect) {
-	if (!g_tc[PB2_OC1B]) {
-		// MASK the interrupt + disable the clock;		
-		TIMSK1 &= ~_BV(OCIE1B);
-		TCCR1B &= 0xf8;
-		PORTB &= ~_BV(PORTB2);
-	}
-	else {
-		if (g_tc[PB2_OC1B]) g_tc[PB2_OC1B]--;
-	}
-		
-}
 #endif
 
 
@@ -107,6 +75,26 @@ ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
 
 /* ================================================================================ */
 
+static void _beeper_init_port(volatile uint8_t *port, uint8_t portnum) {
+	*port |= _BV(portnum);
+}
+
+static void _beeper_init_ocr(volatile uint8_t *ocrh,
+		volatile uint8_t *ocrl,
+		uint16_t value) {
+
+	if (NULL != ocrh) *ocrh = (value >> 8) & 0xff;
+	*ocrl = value & 0xff;
+}
+
+static void _beeper_init_tcnt(volatile uint8_t *tcnth,
+		volatile uint8_t *tcntl,
+		uint16_t value) {
+
+	if (NULL != tcnth) *tcnth = (value >> 8) & 0xff;
+	*tcntl = value & 0xff;
+}
+
 void beeper_init(e_timer_pins a_pin) {
 
 	// enable interrupts
@@ -114,65 +102,59 @@ void beeper_init(e_timer_pins a_pin) {
 
 	switch (a_pin) {
 		case PD6_OC0A:
-		case PD5_OC0B:
 			power_timer0_enable();
+			_beeper_init_port(&DDRD, PORTD6);
+			_beeper_init_ocr(NULL, &OCR0A, 0x00);
+			_beeper_init_tcnt(NULL, &TCNT0, 0x00);
 
 			// clock disabled
+			TCCR0A = 0x42;
 			TCCR0B = 0x00;
-			TCNT0 = 0x00;
-			if (PD6_OC0A == a_pin) {
-				TCCR0A = 0x42;
-				OCR0A = 0x00;
-				DDRD |= _BV(PORTD6);
-			}
-			else {
-				TCCR0A = 0x12;
-				OCR0B = 0x00;
-				DDRD |= _BV(PORTD5);
-			}
 			break;
 
 		case PB1_OC1A:
-		case PB2_OC1B:
 			power_timer1_enable();
-			if (PB1_OC1A) {
-				DDRB |= _BV(PORTB1);
-				TCCR1A = 0x40;
-			}
-			else {
-				DDRB |= _BV(PORTB2);
-				TCCR1A = 0x10;
-			}
+			_beeper_init_port(&DDRB, PORTB1);
+			_beeper_init_ocr(&OCR1AH, &OCR1AL, 0x00);
+			_beeper_init_tcnt(&TCNT1H, &TCNT1L, 0x00);
 
 			// clock disabled, CTC mode
+			TCCR1A = 0x40;
 			TCCR1B = 0x08;
-			OCR1AH = 0x00;
-			OCR1AL = 0x00;
-			TCNT1L = 0x00;
-			TCNT1H = 0x00;
 			break;
 
 		case PB3_OC2A:
-		case PD3_OC2B:
 			power_timer2_enable();
-			if (PB3_OC2A) {
-				DDRB |= _BV(PORTB3);
-				TCCR2A = 0x42;
-				OCR2A = 0x00;
-			}
-			else {
-				DDRD |= _BV(PORTD3);
-				TCCR2A = 0x12;
-				OCR2B = 0x00;
-			}
+			_beeper_init_port(&DDRB, PORTB3);
+			_beeper_init_ocr(NULL, &OCR2A, 0x00);
+			_beeper_init_tcnt(NULL, &TCNT2, 0x00);
 
+			// clock disabled, CTC mode
+			TCCR2A = 0x42;
 			TCCR2B = 0x00;
-			TCNT2 = 0x00;
 			break;
 
 		default:
 			break;
 	} // switch
+}
+
+/**
+ * @brief helper function to calculate the presclaer and OCR
+ *
+ * @param ocr
+ * @param prescaler
+ * @param a_freq
+ * @param criterion
+ */
+static void _find_ocr_prescaler(uint32_t *ocr, uint8_t *prescaler, uint32_t a_freq, uint32_t criterion) {
+	uint8_t prescalers[] = { 0, 3, 6, 8, 10 };
+	uint8_t pnum = sizeof(prescalers);
+	*prescaler = 0;
+
+	do {
+		*ocr = F_CPU / ((a_freq << 1) * (0x01 << prescalers[*prescaler]));
+	} while ((*ocr > criterion) && (++(*prescaler) < pnum));
 }
 
 /**
@@ -187,9 +169,6 @@ static void _timer8_prescaler(uint32_t a_freq,
 		uint8_t *a_prescaler) {
 
 	uint32_t ocr = 0x00;
-	uint8_t prescalers[] = { 0, 3, 6, 8, 10 };
-	uint8_t pnum = sizeof(prescalers);
-	uint8_t i = 0;
 
 	// smallest achievable frequency with this timer
 	if (a_freq < 62) {
@@ -198,12 +177,8 @@ static void _timer8_prescaler(uint32_t a_freq,
 		return;
 	}
 
-	do {
-		ocr = F_CPU / ((a_freq << 1) * (0x01 << prescalers[i]));
-	} while ((ocr > 255) && (++i < pnum));
-
+	_find_ocr_prescaler(&ocr, a_prescaler, a_freq, 255);
 	*a_ocr = (ocr & 0xff);	
-	*a_prescaler = i;
 }
 
 /**
@@ -220,17 +195,20 @@ static void _timer16_prescaler(uint32_t a_freq,
 		uint8_t *a_prescaler) {
 
 	uint32_t ocr = 0x00;
-	uint8_t prescalers[] = { 0, 3, 6, 8, 10 };
-	uint8_t pnum = sizeof(prescalers);
-	uint8_t i = 0;
 
-	do {
-		ocr = F_CPU / (a_freq << (1 + prescalers[i]));
-	} while ((ocr > 65535) && (++i < pnum));
-
+	_find_ocr_prescaler(&ocr, a_prescaler, a_freq, 65535);
 	*a_ocrh = (ocr & 0xff00) >> 8;
 	*a_ocrl = (ocr & 0xff);
-	*a_prescaler = i;
+}
+
+static void _beep_timer8(e_timer_pins pin, 
+		uint32_t freq,
+		uint32_t duration,
+		volatile uint8_t *tcca,
+		volatile uint8_t *tccb,
+		volatile uint8_t *ocra) {
+
+
 }
 
 void beeper_beep(e_timer_pins a_pin, 
@@ -247,11 +225,10 @@ void beeper_beep(e_timer_pins a_pin,
 	switch(a_pin) {
 
 		case PD6_OC0A:
-		case PD5_OC0B:
 			TCCR0B &= 0xf8;
 
 			if (freq) {
-				TCCR0A |= a_pin == PD6_OC0A ? 0x40 : 0x10;
+				TCCR0A |= 0x40;
 				_timer8_prescaler(freq, &ocr, &presc);
 
 				TCCR0B |= (presc & 0x07);
@@ -268,18 +245,11 @@ void beeper_beep(e_timer_pins a_pin,
 				g_tc[a_pin] = duration;
 			}
 
-			if (PD6_OC0A == a_pin) {
-				OCR0A = ocr;
-				TIMSK0 |= _BV(OCIE0A);
-			}
-			else {
-				OCR0B = ocr;
-				TIMSK0 |= _BV(OCIE0B);
-			}
+			OCR0A = ocr;
+			TIMSK0 |= _BV(OCIE0A);
 			break;
 
 		case PB1_OC1A:
-		case PB2_OC1B:
 			TCCR1B &= 0xf8;
 			if (freq) {
 				_timer16_prescaler(freq, &ocrh, &ocr, &presc);
@@ -297,20 +267,12 @@ void beeper_beep(e_timer_pins a_pin,
 				g_tc[a_pin] = duration;
 			}
 
-			if (PB1_OC1A == a_pin) {
-				OCR1AH = ocrh;
-				OCR1AL = ocr;
-				TIMSK1 |= _BV(OCIE1A);
-			}
-			else {
-				OCR1BH = ocrh;
-				OCR1BL = ocr;
-				TIMSK1 |= _BV(OCIE1B);
-			}
+			OCR1AH = ocrh;
+			OCR1AL = ocr;
+			TIMSK1 |= _BV(OCIE1A);
 			break;
 
 		case PB3_OC2A:
-		case PD3_OC2B:
 			TCCR2B &= 0xf8;
 			if (freq) {
 				_timer8_prescaler(freq, &ocr, &presc);
@@ -327,14 +289,8 @@ void beeper_beep(e_timer_pins a_pin,
 				g_tc[a_pin] = duration;
 			}
 
-			if (PB3_OC2A == a_pin) {
-				OCR2A = ocr;
-				TIMSK2 |= _BV(OCIE2A);
-			}
-			else {
-				OCR2B = ocr;
-				TIMSK2 |= _BV(OCIE2B);
-			}
+			OCR2A = ocr;
+			TIMSK2 |= _BV(OCIE2A);
 			break;
 
 		default:
@@ -358,18 +314,15 @@ void beeper_block(e_timer_pins a_pin) {
 	// deadlock protection
 	switch (a_pin) {
 		case PD6_OC0A:
-		case PD5_OC0B:
-			wait = _beeper_block(a_pin, &TIMSK0, (PD6_OC0A == a_pin ? OCIE0A : OCIE0B));
+			wait = _beeper_block(a_pin, &TIMSK0, OCIE0A);
 			break;
 
 		case PB1_OC1A:
-		case PB2_OC1B:
-			wait = _beeper_block(a_pin, &TIMSK1, (PB1_OC1A == a_pin ? OCIE1A : OCIE1B));
+			wait = _beeper_block(a_pin, &TIMSK1, OCIE1A);
 			break;
 
 		case PB3_OC2A:
-		case PD3_OC2B:
-			wait = _beeper_block(a_pin, &TIMSK2, (PB3_OC2A == a_pin ? OCIE2A : OCIE2B));
+			wait = _beeper_block(a_pin, &TIMSK2, OCIE2A);
 			break;
 
 		default:
@@ -395,18 +348,15 @@ void beeper_off(e_timer_pins a_pin) {
 	switch (a_pin) {
 
 		case PD6_OC0A:
-		case PD5_OC0B:
-			_beeper_off(&TIMSK0, &TCCR0B, (PD6_OC0A == a_pin ? (~_BV(OCIE0A)) : (~_BV(OCIE0B))), 0x00);
+			_beeper_off(&TIMSK0, &TCCR0B, ~_BV(OCIE0A), 0x00);
 			break;
 
 		case PB1_OC1A:
-		case PB2_OC1B:
-			_beeper_off(&TIMSK1, &TCCR1B, (PB1_OC1A == a_pin ? ~_BV(OCIE1A) : ~_BV(OCIE1B)), 0xf8);
+			_beeper_off(&TIMSK1, &TCCR1B, ~_BV(OCIE1A), 0xf8);
 			break;
 
 		case PB3_OC2A:
-		case PD3_OC2B:
-			_beeper_off(&TIMSK2, &TCCR2B, (PB3_OC2A == a_pin ? ~_BV(OCIE2A) : ~_BV(OCIE2B)), 0x00);
+			_beeper_off(&TIMSK2, &TCCR2B,  ~_BV(OCIE2A), 0x00);
 			break;
 
 		default:
