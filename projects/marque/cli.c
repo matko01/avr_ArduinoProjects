@@ -178,15 +178,15 @@ static void fh_serial_get(void *a_ctx) {
 	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
-	snprintf(resp, sizeof(resp), "RX Ok: %d\r\n", sb->stats.ok);
+	snprintf(resp, sizeof(resp), "RX Ok: %d\r\n", (unsigned int) sb->stats.ok);
 	serial_poll_send((void*)resp, strlen(resp));
 	
 	memset(resp, 0x00, sizeof(resp));
-	snprintf(resp, sizeof(resp), "RX Dropped: %d\r\n", sb->stats.dropped);
+	snprintf(resp, sizeof(resp), "RX Dropped: %d\r\n", (unsigned int) sb->stats.dropped);
 	serial_poll_send((void*)resp, strlen(resp));
 
 	memset(resp, 0x00, sizeof(resp));
-	snprintf(resp, sizeof(resp), "RX FE: %d\r\n", sb->stats.frame_error);
+	snprintf(resp, sizeof(resp), "RX FE: %d\r\n", (unsigned int) sb->stats.frame_error);
 	serial_poll_send((void*)resp, strlen(resp));
 }
 

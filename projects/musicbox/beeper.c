@@ -1,11 +1,15 @@
 #include "beeper.h"
+#include "tdelay.h"
 
 #include <avr/interrupt.h>
 #include <avr/power.h>
 
 /* ================================================================================ */
 
-static volatile uint32_t g_tc[TIMER_PIN_LAST] = {0x00};
+static volatile struct {
+	uint32_t duration;
+	uint8_t lower_pin;
+} g_tc[E_TIMER_LAST] = {0x00};
 
 /* ================================================================================ */
 
