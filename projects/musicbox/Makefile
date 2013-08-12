@@ -38,7 +38,7 @@ $(TARGET): $(COBJ) libpca.a
 clean:
 	$(MAKE) -C $(PCA_PREFIX) clean
 	@echo ========== cleanup ========== 
-	rm -rf *.o *.hex $(TARGET)	
+	rm -rf *.o *.bin *.hex $(TARGET)	
 
 read:
 	$(ISP) $(ISPFLAGS) -U flash:r:$(TARGET)_backup.hex:i
