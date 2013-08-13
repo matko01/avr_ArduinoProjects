@@ -3,7 +3,7 @@
 
 #include "tdelay.h"
 
-#define beeper_block(__timer) _tdc_block(__timer)
+void beeper_block(e_timer a_timer);
 
 
 void beeper_init(e_timer a_timer);

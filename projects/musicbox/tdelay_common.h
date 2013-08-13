@@ -3,6 +3,11 @@
 
 #include "common.h"
 
+#define TDELAY_IMPLEMENT_T0_INT 1
+#define TDELAY_IMPLEMENT_T1_INT 1
+#define TDELAY_IMPLEMENT_T2_INT 1
+
+
 typedef enum _e_timer {
 	E_TIMER0,
 	E_TIMER1,

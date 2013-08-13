@@ -1,8 +1,9 @@
 TARGET=musicbox
 SOURCES=main.c \
 		beeper.c \
-		tdelay_common.c \
-		tdelay.c
+		tdelay.c \
+		tdelay_common.c
+
 
 DEPS=
 COBJ=$(SOURCES:.c=.o)
@@ -17,7 +18,7 @@ LDFLAGS=-lpca -L$(PCA_PREFIX)
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
 ISP=$(ISPDIR)/avrdude
-ISPFLAGS=-c arduino -n -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avrdude.conf 
+ISPFLAGS=-c arduino -p $(MCU) -P $(ISPPORT) -b 115200 -C $(ISPDIR)/avrdude.conf 
 
 all: $(TARGET)
 

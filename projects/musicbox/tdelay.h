@@ -1,10 +1,6 @@
 #ifndef TDELAY_H_IPOQKAD0
 #define TDELAY_H_IPOQKAD0
 
-#define TDELAY_IMPLEMENT_T0_INT 1
-#define TDELAY_IMPLEMENT_T1_INT 1
-#define TDELAY_IMPLEMENT_T2_INT 1
-
 #include "common.h"
 #include "tdelay_common.h"
 

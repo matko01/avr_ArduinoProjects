@@ -74,7 +74,7 @@ void beeper_init(e_timer a_timer) {
 	switch (a_timer) {
 		case E_TIMER0:
 			DDRD |= _BV(PORTD6);
-			TCCR0A |= 0x40;
+			TCCR0A = 0x42;
 			break;
 
 		case E_TIMER1:
@@ -104,18 +104,21 @@ void beeper_beep(e_timer a_timer,
 	uint8_t ocrh = 0x00;
 	uint8_t presc = 0x00;
 
-	/* beeper_off(a_timer); */
+	beeper_off(a_timer);
 	_tdc_setup_ms(a_timer, duration);
 
 	if (freq) {
 		// settings correction
+		_tdc_set_duration(a_timer, (uint32_t)((freq*duration) / 500));
+
 		switch(a_timer) {
 			case E_TIMER0:
-				TCCR0A |= 0x40;
+				TCCR0A = 0x42;
 				_timer8_prescaler(freq, &ocr, &presc);
+				TCCR0B = 0x00;
 				TCCR0B |= (presc & 0x07);
 				OCR0A = ocr;
-				freq = freq < 62 ? 62 : freq;
+				/* freq = freq < 62 ? 62 : freq; */
 				break;
 
 			case E_TIMER1:
@@ -139,7 +142,6 @@ void beeper_beep(e_timer a_timer,
 				break;
 		} // switch
 
-		_tdc_set_duration(a_timer, (uint32_t)((freq*duration) / 500));
 	}
 
 	_tdc_enable_interrupt(a_timer);
@@ -149,7 +151,7 @@ void beeper_off(e_timer a_timer) {
 	switch (a_timer) {
 		case E_TIMER0:
 			TIMSK0 &= ~_BV(OCIE0A);
-			TCCR0B &= 0x00;
+			TCCR0B = 0x00;
 			break;
 
 		case E_TIMER1:
@@ -159,11 +161,15 @@ void beeper_off(e_timer a_timer) {
 
 		case E_TIMER2:
 			TIMSK2 &= ~_BV(OCIE2A);
-			TCCR2B &= 0x00;
+			TCCR2B = 0x00;
 			break;
 
 		default:
 			break;
 	} // switch
 	_tdc_set_duration(a_timer, 0x00);
+}
+
+void beeper_block(e_timer a_timer) {
+	_tdc_block(a_timer);
 }

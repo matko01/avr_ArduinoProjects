@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
 /* ================================================================================ */
 
 #if TDELAY_IMPLEMENT_T0_INT == 1 || TDELAY_IMPLEMENT_T1_INT == 1 || TDELAY_IMPLEMENT_T2_INT == 1
 static volatile struct {
-	uint32_t duration;
-	uint8_t reset_cmpa_pin;
+	volatile uint32_t duration;
+	volatile uint8_t reset_cmpa_pin;
 } g_tc[E_TIMER_LAST];
 
 
@@ -16,12 +17,12 @@ static volatile struct {
  * @brief interrupt context structure
  */
 struct regs {
-	e_timer timer;
+	volatile e_timer timer;
 	volatile uint8_t *timsk;
 	volatile uint8_t *tccrb;
 	volatile uint8_t *port;
-	uint8_t tccval;
-	uint8_t pin;
+	volatile uint8_t tccval;
+	volatile uint8_t pin;
 };
 
 /* ================================================================================ */
@@ -31,10 +32,10 @@ static void _isr_tdelay_handler(volatile struct regs *sregs) {
 	if (!g_tc[sregs->timer].duration) {
 		// MASK the interrupt + disable the clock;		
 		*(sregs->timsk) &= ~_BV(1); // OCIEXA
-		*sregs->tccrb = sregs->tccval;
+		*(sregs->tccrb) = sregs->tccval;
 
 		if (g_tc[sregs->timer].reset_cmpa_pin)
-			*sregs->port &= ~_BV(sregs->pin);
+			*(sregs->port) &= ~_BV(sregs->pin);
 	}
 	else {
 		if (g_tc[sregs->timer].duration) 
@@ -45,7 +46,7 @@ static void _isr_tdelay_handler(volatile struct regs *sregs) {
 #endif
 
 static uint8_t __tdc_block(e_timer a_timer, volatile uint8_t *timsk, uint8_t map) {
-	if (bit_is_clear(*timsk, map)) {				
+	if (bit_is_clear((*timsk), map)) {				
 		_tdc_set_duration(a_timer, 0x00);
 		return 0;
 	}
@@ -61,7 +62,8 @@ static uint8_t __tdc_block(e_timer a_timer, volatile uint8_t *timsk, uint8_t map
  * @param TIMER2_COMPA_vect
  */
 ISR(TIMER2_COMPA_vect, ISR_NOBLOCK) {
-	_isr_tdelay_handler( &{ E_TIMER2, &TIMSK2, &TCCR2B, &PORTB, 0x00, PORTB3 } );
+	volatile struct regs tr2 = { E_TIMER2, &TIMSK2, &TCCR2B, &PORTB, 0x00, PORTB3 };
+	_isr_tdelay_handler( &tr2 );
 }
 
 #endif
@@ -74,7 +76,8 @@ ISR(TIMER2_COMPA_vect, ISR_NOBLOCK) {
  * @param TIMER1_COMPA_vect
  */
 ISR(TIMER1_COMPA_vect, ISR_NOBLOCK) {
-	_isr_tdelay_handler( &{ E_TIMER1, &TIMSK1, &TCCR1B, &PORTB, 0xf8, PORTB1 } );
+	volatile struct regs tr1 = { E_TIMER1, &TIMSK1, &TCCR1B, &PORTB, 0xf8, PORTB1 };
+	_isr_tdelay_handler( &tr1 );
 }
 
 #endif
@@ -87,7 +90,22 @@ ISR(TIMER1_COMPA_vect, ISR_NOBLOCK) {
  * @param TIMER0_COMPA_vect
  */
 ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) {
-	_isr_tdelay_handler( &{ E_TIMER0, &TIMSK0, &TCCR0B, &PORTD, 0x00, PORTD6 } );
+	volatile struct regs tr0 = { E_TIMER0, &TIMSK0, &TCCR0B, &PORTD, 0x00, PORTD6 };
+	_isr_tdelay_handler( &tr0 );
+	/* volatile struct regs *sregs = &tr0; */
+
+	/* if (!g_tc[0].duration) { */
+		// MASK the interrupt + disable the clock;		
+		/* *(sregs->timsk) &= ~_BV(1); // OCIEXA */
+		/* *(sregs->tccrb) = sregs->tccval; */
+
+		/* if (g_tc[sregs->timer].reset_cmpa_pin) */
+		/* 	*(sregs->port) &= ~_BV(sregs->pin); */
+	/* } */
+	/* else { */
+	/* 	if (g_tc[0].duration)  */
+	/* 		g_tc[0].duration--; */
+	/* } */
 }
 
 #endif
@@ -100,7 +118,7 @@ void _tdc_set_duration(e_timer a_tim, uint32_t a_dur) {
 }
 
 
-inline void _tdc_set_cmp_pin(e_timer a_tim, uint8_t a_pin) {
+void _tdc_set_cmp_pin(e_timer a_tim, uint8_t a_pin) {
 	g_tc[a_tim].reset_cmpa_pin = a_pin;
 }
 
@@ -113,8 +131,7 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 		case E_TIMER0:
 			// interrupt every 1ms
 			TCCR0A &= 0x0f;
-			TCCR0B &= 0xf8;
-			TCCR0B |= 0x03;			
+			TCCR0B = 0x03;			
 			TCNT0 = 0x00;
 			OCR0A = 250;
 			break;
@@ -133,8 +150,7 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 		case E_TIMER2:
 			// interrupt every 1ms
 			TCCR2A &= 0x0f;
-			TCCR2B &= 0xf8;
-			TCCR2B |= 0x03;			
+			TCCR2B = 0x03;			
 			TCNT2 = 0x00;
 			OCR2A = 250;
 			break;
@@ -143,10 +159,10 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 			return;
 			break;
 	} // switch
-	
+
 	_tdc_set_duration(a_timer, a_delay);
-	_tdc_set_cmp_pin(a_timer, 0x00);
 }
+
 
 void _tdc_enable_interrupt(e_timer a_timer) {
 	// which pin
