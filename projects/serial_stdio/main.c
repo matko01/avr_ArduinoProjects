@@ -6,6 +6,7 @@
 
 #include "main.h"
 #include "serial.h"
+#include "tdelay.h"
 
 int main(void)
 {
@@ -14,10 +15,12 @@ int main(void)
 	serial_flush();
 
 	serial_install_stdio();
+	tdelay_init(E_TIMER0);
 
 	while(1) {
 		printf("STDIO Serial Hello \n");
-		_delay_ms(1000);
+		/* _delay_ms(1000); */
+		tdelay_ms(E_TIMER0, 1000);
 	}
 
 	return 0;

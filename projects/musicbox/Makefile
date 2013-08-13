@@ -1,8 +1,5 @@
 TARGET=musicbox
-SOURCES=main.c \
-		beeper.c \
-		tdelay.c \
-		tdelay_common.c
+SOURCES=main.c
 
 
 DEPS=

@@ -23,12 +23,11 @@ static void play(e_timer a_pin, struct note *a_note) {
 		beeper_block(a_pin);
 	}
 	else {
-		/* beeper_off(a_pin); */
+		beeper_off(a_pin);
 	}
 }
 
-/* #define PIN E_TIMER0 // PORTD6 */
-#define PIN 0 // PORTD6
+#define PIN E_TIMER1 // PORTD6
 
 int main(void)
 {
