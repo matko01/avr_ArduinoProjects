@@ -5,12 +5,16 @@
 
 /* ================================================================================ */
 
+#if TDELAY_IMPLEMENT_T0_INT == 1 || TDELAY_IMPLEMENT_T1_INT == 1 || TDELAY_IMPLEMENT_T2_INT == 1
 static volatile struct {
 	uint32_t duration;
 	uint8_t reset_cmpa_pin;
 } g_tc[E_TIMER_LAST];
 
-#if TDELAY_IMPLEMENT_T0_INT == 1 || TDELAY_IMPLEMENT_T1_INT == 1 || TDELAY_IMPLEMENT_T2_INT == 1
+
+/**
+ * @brief interrupt context structure
+ */
 struct regs {
 	e_timer timer;
 	volatile uint8_t *timsk;
@@ -113,7 +117,6 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 			TCCR0B |= 0x03;			
 			TCNT0 = 0x00;
 			OCR0A = 250;
-			TIMSK0 |= _BV(OCIE0A);
 			break;
 
 		case E_TIMER1:
@@ -125,7 +128,6 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 			TCNT1H = 0x00;
 			OCR1AH = 0x00;
 			OCR1AL = 250;
-			TIMSK1 |= _BV(OCIE1A);
 			break;
 
 		case E_TIMER2:
@@ -135,7 +137,6 @@ void _tdc_setup_ms(e_timer a_timer, uint32_t a_delay) {
 			TCCR2B |= 0x03;			
 			TCNT2 = 0x00;
 			OCR2A = 250;
-			TIMSK2 |= _BV(OCIE2A);
 			break;
 
 		default:

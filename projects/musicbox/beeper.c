@@ -104,17 +104,17 @@ void beeper_beep(e_timer a_timer,
 	uint8_t ocrh = 0x00;
 	uint8_t presc = 0x00;
 
-	beeper_off(a_timer);
+	/* beeper_off(a_timer); */
 	_tdc_setup_ms(a_timer, duration);
 
 	if (freq) {
 		// settings correction
 		switch(a_timer) {
 			case E_TIMER0:
-				_timer8_prescaler(freq, &ocr, &presc);
-				OCR0A = ocr;
 				TCCR0A |= 0x40;
+				_timer8_prescaler(freq, &ocr, &presc);
 				TCCR0B |= (presc & 0x07);
+				OCR0A = ocr;
 				freq = freq < 62 ? 62 : freq;
 				break;
 
