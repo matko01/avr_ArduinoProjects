@@ -18,7 +18,7 @@ int main(void)
 	tdelay_init(E_TIMER0);
 
 	while(1) {
-		printf("STDIO Serial Hello \n");
+		printf("STDIO Serial Hello. Free mem: [%d]\n", common_memory_left());
 		/* _delay_ms(1000); */
 		tdelay_ms(E_TIMER0, 1000);
 	}
