@@ -207,7 +207,7 @@ while (1) {
 	# calculate the pitch and duration
 	my $note = int($notes[$score_event[4] % 128]);
 	# my $dur = int( $score_event[2]/1000 - 0.5);
-	my $dur = 150;
+	my $dur = 50;
 
 	my $send = $port->write(slip_send($note, $dur));
 	while (!$port->write_drain) {}
