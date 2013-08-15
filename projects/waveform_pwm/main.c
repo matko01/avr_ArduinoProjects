@@ -1,5 +1,6 @@
 #include "serial.h"
 #include "slip.h"
+#include "sched.h"
 
 #include <avr/io.h>
 #include <util/delay.h>
@@ -20,8 +21,6 @@ int main(void)
 	serial_init(E_BAUD_38400);	
 	serial_install_interrupts(SERIAL_RX_INTERRUPT);
 	serial_flush();
-
-	beeper_init(PIN);
 
 	unsigned char size = 0;
 	struct packet pack;
