@@ -1,5 +1,6 @@
-TARGET=musicbox
-SOURCES=main.c
+TARGET=wpwm
+SOURCES=main.c \
+		sched.c
 
 
 DEPS=

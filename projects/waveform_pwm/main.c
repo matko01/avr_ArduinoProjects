@@ -10,7 +10,7 @@ struct packet {
 	uint16_t crc16;
 	uint16_t num;
 	uint8_t samplerate;
-	uint8_t samples[1024];
+	uint8_t samples[128];
 };
 
 
