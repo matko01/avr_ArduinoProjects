@@ -1,8 +1,13 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
+#ifdef OFFLINE_TESTING
+#include <stdint.h>
+#else
 #include "config.h"
 #include "common.h"
+#include "timer_common.h"
+#endif
 
 /**
  * @brief time resolution definition for scheduler
@@ -11,21 +16,27 @@
 
 
 /**
+ * @brief implement timer interrupt
+ */
+#define SCHED_IMPLEMENT_TIMER_INT 1
+
+
+/**
  * @brief tick time resolution definition (by default a single tick is a millisecond)
  */
-#define SCHED_TICK_FREQUENCY 1000
+#define SCHED_TICK_FREQUENCY 100
 
 
 /**
  * @brief which timer to use as a tick generator
  */
-#define SCHED_TIMER 1
+#define SCHED_TIMER E_TIMER0
 
 
 /**
  * @brief maximum number of tasks allowed to run simultaneously
  */
-#define SCHED_MAX_TASKS 32
+#define SCHED_MAX_TASKS 8
 
 
 /**
@@ -63,6 +74,10 @@ typedef void (*t_fh)(void *a_data);
  */
 #define SCHED_TASK_IS_EXECUTABLE(__id) ( __id & (SCHED_TS_EXECUTABLE << 6))
 
+/**
+ * @brief is task marked as running (not pauzed)
+ */
+#define SCHED_TASK_IS_RUNNING(__id) ( __id & (SCHED_TS_RUNNING << 6))
 
 /**
  * @brief task struct
@@ -74,12 +89,13 @@ typedef struct _t_task {
 	volatile t_timeres interval_dynamic;
 	
 	t_fh handler;
+	void *data;
 	struct _t_task *prv, *nxt;
 } t_task;
 
 
 void sched_init();
-uint8_t sched_task_new(t_fh a_handler, t_timeres a_interval);
+uint8_t sched_task_new(t_fh a_handler, void *a_data, t_timeres a_interval);
 void sched_task_delete(uint8_t a_id);
 void sched_task_pauze(uint8_t a_id);
 void sched_task_resume(uint8_t a_id);

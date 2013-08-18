@@ -1,5 +1,8 @@
 #include "sched.h"
 #include <string.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/power.h>
 
 /* ================================================================================ */
 
@@ -14,7 +17,7 @@ static uint8_t _sched_find_task_slot() {
 	 * @brief loop through slots
 	 */
 	while (i--) {
-		if (SCHED_TASK_IS_EXECUTABLE(g_tasks[i].ts_id)) {
+		if (!SCHED_TASK_IS_EXECUTABLE(g_tasks[i].ts_id)) {
 			return i;
 		}
 	}
@@ -24,14 +27,77 @@ static uint8_t _sched_find_task_slot() {
 
 /* ================================================================================ */
 
+#if SCHED_IMPLEMENT_TIMER_INT == 1
+
+#if SCHED_TIMER == E_TIMER0
+ISR(TIMER0_COMPA_vect) 
+#elif SCHED_TIMER == E_TIMER1
+ISR(TIMER1_COMPA_vect) 
+#elif SCHED_TIMER == E_TIMER2
+ISR(TIMER2_COMPA_vect) 
+#else
+#error UNKNOWN TIMER REQUESTED
+#endif
+{
+	volatile t_task *tsk = (t_task *)g_head;
+
+	// decrement the interval for all scheduled tasks
+	while (tsk) {
+		if (tsk->interval_dynamic && SCHED_TASK_IS_RUNNING(tsk->ts_id)) {
+			tsk->interval_dynamic--;
+		}
+		tsk = tsk->nxt;
+	}
+}
+#endif
+
+/* ================================================================================ */
+
 void sched_init() {
 	memset((void *)g_tasks, 0x00, sizeof(g_tasks));
+	uint32_t pocr;
+
+	// which pin
+	switch(SCHED_TIMER) {
+		case E_TIMER0:
+			power_timer0_enable();
+			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 255);
+			TCCR0A = 0x02;
+			TCCR0B = (pocr >> 24) & 0x07;			
+			OCR0A = pocr & 0xff;
+			TCNT0 = 0x00;
+			break;
+
+		case E_TIMER1:
+			power_timer1_enable();
+			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 65535);
+			TCCR1A = 0x00;
+			TCCR1B = 0x08 | ((pocr >> 24) & 0x07);
+			OCR1AL = pocr & 0xff;
+			OCR1AH = (pocr >> 8) & 0xff;
+			TCNT1H = TCNT1L = 0x00;
+			break;
+
+		case E_TIMER2:
+			power_timer2_enable();
+			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 255);
+			TCCR2A = 0x02;
+			TCCR2B = (pocr >> 24) & 0x07;			
+			OCR2A = pocr & 0xff;
+			TCNT2 = 0x00;
+			break;
+
+		default:
+			break;
+	} // switch
+
+	_timer_enable_interrupt(SCHED_TIMER);
 	g_head = NULL;
 	g_tail = NULL;
 }
 
 
-uint8_t sched_task_new(t_fh a_handler, t_timeres a_interval) {
+uint8_t sched_task_new(t_fh a_handler, void *a_data, t_timeres a_interval) {
 	uint8_t idx = _sched_find_task_slot(); 
 	
 	//_sched_find_task_slot();
@@ -41,7 +107,7 @@ uint8_t sched_task_new(t_fh a_handler, t_timeres a_interval) {
 
 		g_tasks[idx].ts_id = SCHED_COMBINE_TS_ID((SCHED_TS_EXECUTABLE | SCHED_TS_RUNNING), idx);
 		g_tasks[idx].interval_static = a_interval;
-		g_tasks[idx].interval_dynamic = 0x00;
+		g_tasks[idx].interval_dynamic = a_interval;
 		g_tasks[idx].handler = a_handler;
 
 		// empty list
@@ -107,8 +173,14 @@ uint8_t sched_task_count() {
 }
 
 void sched_run() {
-	while (1) {
 
+	t_task *tsk = (t_task *)g_head;
+	while (tsk) {
+		if (!tsk->interval_dynamic && tsk->handler) {
+			tsk->handler(tsk->data);
+			tsk->interval_dynamic = tsk->interval_static;
+		}
+		tsk = tsk->nxt;
 	}
 }
 

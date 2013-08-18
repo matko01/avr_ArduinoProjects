@@ -2,6 +2,7 @@
 #include "slip.h"
 #include "sched.h"
 
+#include <stdio.h>
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -14,39 +15,53 @@ struct packet {
 };
 
 
-#define PIN E_TIMER1 // PORTD6
+void serial_echo(void *a_data __attribute__((unused))) {
+	printf("Hello World\r\n");
+}
+
 
 int main(void)
 {
 	serial_init(E_BAUD_38400);	
 	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_install_stdio();
 	serial_flush();
 
-	unsigned char size = 0;
-	struct packet pack;
+	sched_init();
 
-	while (1) {
+	sched_task_new(serial_echo, NULL, 200);
 
-		if (0 >= (size = slip_recv((void *)&pack, sizeof(pack)))) {
-			continue;
-		}
-
-		// ignore incomplete data chunks
-		if (size < 6) {
-			continue;
-		}
-
-		// verify if the information is genuine
-		if (!slip_verify_crc16((unsigned char *)&pack, size, 0)) {
-			continue;
-		}
+	while(1) sched_run();
 
 
 
-		for (unsigned char i = 0; i < pack.num; i++) {
-			// play the samples
-		}
-	}
+
+	/* unsigned char size = 0; */
+	/* struct packet pack; */
+
+
+	/* while (1) { */
+
+	/* 	if (0 >= (size = slip_recv((void *)&pack, sizeof(pack)))) { */
+	/* 		continue; */
+	/* 	} */
+
+	/* 	// ignore incomplete data chunks */
+	/* 	if (size < 6) { */
+	/* 		continue; */
+	/* 	} */
+
+	/* 	// verify if the information is genuine */
+	/* 	if (!slip_verify_crc16((unsigned char *)&pack, size, 0)) { */
+	/* 		continue; */
+	/* 	} */
+
+
+
+	/* 	for (unsigned char i = 0; i < pack.num; i++) { */
+	/* 		// play the samples */
+	/* 	} */
+	/* } */
 
 	return 0;
 }
