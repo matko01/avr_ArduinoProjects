@@ -54,44 +54,21 @@ ISR(TIMER2_COMPA_vect)
 /* ================================================================================ */
 
 void sched_init() {
-	memset((void *)g_tasks, 0x00, sizeof(g_tasks));
 	uint32_t pocr;
 
-	// which pin
-	switch(SCHED_TIMER) {
-		case E_TIMER0:
-			power_timer0_enable();
-			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 255);
-			TCCR0A = 0x02;
-			TCCR0B = (pocr >> 24) & 0x07;			
-			OCR0A = pocr & 0xff;
-			TCNT0 = 0x00;
-			break;
+	memset((void *)g_tasks, 0x00, sizeof(g_tasks));
+	_timer_init_ctc(SCHED_TIMER);
 
-		case E_TIMER1:
-			power_timer1_enable();
-			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 65535);
-			TCCR1A = 0x00;
-			TCCR1B = 0x08 | ((pocr >> 24) & 0x07);
-			OCR1AL = pocr & 0xff;
-			OCR1AH = (pocr >> 8) & 0xff;
-			TCNT1H = TCNT1L = 0x00;
-			break;
+	if (E_TIMER1 == SCHED_TIMER) {
+		pocr = _timer_freq_prescale(2 * SCHED_TICK_FREQUENCY, 65535);
+	}
+	else {
+		pocr = _timer_freq_prescale(2 * SCHED_TICK_FREQUENCY, 255);
+	}
 
-		case E_TIMER2:
-			power_timer2_enable();
-			pocr = _timer_freq_prescale(2*SCHED_TICK_FREQUENCY, 255);
-			TCCR2A = 0x02;
-			TCCR2B = (pocr >> 24) & 0x07;			
-			OCR2A = pocr & 0xff;
-			TCNT2 = 0x00;
-			break;
+	_timer_setup_ctc(SCHED_TIMER, pocr);
+	_timer_en_compa_int(SCHED_TIMER);
 
-		default:
-			break;
-	} // switch
-
-	_timer_enable_interrupt(SCHED_TIMER);
 	g_head = NULL;
 	g_tail = NULL;
 }
