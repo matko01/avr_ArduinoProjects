@@ -157,7 +157,7 @@ sub slip_send {
 		$_ == SLIP_END ? (SLIP_ESC, SLIP_ESC_END) : 
 			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
 
-	my $size = @data;
+	my $size = @_;
 	my $notes = int($size/2);
 	my $crc = crc16( pack "CCCS*", (0,0,$notes,@_));
 
