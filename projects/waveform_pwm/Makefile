@@ -1,6 +1,5 @@
 TARGET=wpwm
-SOURCES=main.c \
-		sched.c
+SOURCES=main.c
 
 
 DEPS=
