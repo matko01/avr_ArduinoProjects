@@ -8,7 +8,7 @@ fi
 TMP_WAV=tmp_file.wav
 
 echo "Will convert files [$*]"
-sox --magic -S -V3 "$*" -G --norm -b 8 -c 1 -r 8000 "$TMP_WAV"
+sox --magic -S -V3 "$*" -G -b 8 -c 1 -r 8000 "$TMP_WAV"
 sox_es=$?
 
 if [ $sox_es -ne 0 ]; then
