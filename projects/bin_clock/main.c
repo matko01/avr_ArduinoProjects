@@ -3,6 +3,7 @@
 #include "sched.h"
 
 static unsigned char g_conversion = 0x00;
+static struct tm g_time  = { 0x00 };
 
 
 static void _bcd_correct(unsigned char *a_bcd) {
@@ -46,14 +47,19 @@ void bclk_inc_time(void *a_data) {
 
 
 
+
+
 int main(void)
 {
 	serial_init(E_BAUD_9600);	
 	serial_install_interrupts(SERIAL_RX_INTERRUPT);
 	serial_flush();
 
-	// 256 hertz - pretty low
+	// 256 hertz - ticks per second (system clock)
 	sched_init(256);
+
+	// increment clock
+	sched_task_add(blck_inc_time, (void *)&g_time, 256);
 
 	// run scheduled tasks
 	while(1) sched_run();
