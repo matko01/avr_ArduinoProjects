@@ -1,6 +1,5 @@
 #include "serial.h"
 #include "slip.h"
-#include "sched.h"
 
 static unsigned char g_conversion = 0x00;
 static struct tm g_time  = { 0x00 };
@@ -55,13 +54,14 @@ int main(void)
 	serial_install_interrupts(SERIAL_RX_INTERRUPT);
 	serial_flush();
 
-	// 256 hertz - ticks per second (system clock)
-	sched_init(256);
+	// TODO must be redesigned
+	/* // 256 hertz - ticks per second (system clock) */
+	/* sched_init(256); */
 
-	// increment clock
-	sched_task_add(blck_inc_time, (void *)&g_time, 256);
+	/* // increment clock */
+	/* sched_task_add(blck_inc_time, (void *)&g_time, 256); */
 
-	// run scheduled tasks
-	while(1) sched_run();
+	/* // run scheduled tasks */
+	/* while(1) sched_run(); */
 	return 0;
 }

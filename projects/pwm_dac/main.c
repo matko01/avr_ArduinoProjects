@@ -1,6 +1,5 @@
 #include "serial.h"
 #include "slip.h"
-#include "sched.h"
 #include "tpwm.h"
 #include "timer_common.h"
 
