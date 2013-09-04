@@ -22,7 +22,7 @@ all: $(TARGET)
 
 %.o: %.c $(DEPS)
 	@echo -e "\tCC" $<
-	@$(CC) -mmcu=$(MCU) -c -o $@ $< $(CFLAGS)
+	@$(CC) -mmcu=$(MCU) -c -o $@ $< $(CFLAGS) -g
 
 libpca.a:
 	@echo -e "\tBUILDING PURE C ARDUINO LIB"
@@ -34,7 +34,7 @@ libaos.a:
 
 $(TARGET): $(COBJ) $(LIBS)
 	@echo -e "\tLINKING CC" $<
-	@$(CC) -mmcu=$(MCU) -o $(TARGET) $(COBJ) $(LDFLAGS)
+	@$(CC) -mmcu=$(MCU) -o $(TARGET) $(COBJ) $(LDFLAGS) -g
 	$(OBJC) -O ihex -R .eeprom $(TARGET) $(TARGET).hex
 	$(OBJC) -O binary -R .eeprom $(TARGET) $(TARGET).bin
 
