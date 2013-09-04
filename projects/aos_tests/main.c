@@ -34,11 +34,11 @@ void task2(void *a_data UNUSED) {
 int main(void) 
 {
 	aos_init(SCHED_TICK_FREQUENCY);
-	struct task_cb *t1 = aos_task_create(task1, NULL, 128);
+	struct task_cb *t1 = aos_task_create(task1, NULL, E_PRIORITY_NORMAL, 128);
 
-	SP = (uint16_t)t1->ctx.sp;
-	AOS_CTX_RESTORE();
-	__asm__ volatile ("ret");
+	/* SP = (uint16_t)t1->ctx.sp; */
+	/* AOS_CTX_RESTORE(); */
+	/* __asm__ volatile ("ret"); */
 
 	return 0;
 }
