@@ -11,7 +11,7 @@ CC=avr-gcc
 OBJC=avr-objcopy
 MCU=atmega328p
 CFLAGS=-I. -I$(PCA_PREFIX)/include/ -I$(SCHED_PREFIX) -Wall -Os -DF_CPU=16000000UL -std=c99
-LDFLAGS=-lsched -lpca -L$(SCHED_PREFIX) -L$(PCA_PREFIX) 
+LDFLAGS=-laos -lpca -L$(SCHED_PREFIX) -L$(PCA_PREFIX) 
 
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
@@ -28,7 +28,7 @@ libpca.a:
 	@echo -e "\tBUILDING PURE C ARDUINO LIB"
 	$(MAKE) -C $(PCA_PREFIX)
 
-libsched.a:
+libaos.a:
 	@echo -e "\tBUILDING AOS LIB"
 	$(MAKE) -C $(SCHED_PREFIX)
 

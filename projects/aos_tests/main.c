@@ -38,5 +38,8 @@ int main(void)
 
 	aos_init(SCHED_TICK_FREQUENCY);
 
+	aos_task_create(task1, 128);
+	aos_task_create(task2, 128);
+
 	return 0;
 }
