@@ -2,10 +2,10 @@ TARGET=sched_test
 SOURCES=main.c
 
 DEPS=
-LIBS=libsched.a libpca.a
+LIBS=libaos.a libpca.a
 COBJ=$(SOURCES:.c=.o)
 PCA_PREFIX=../../pca
-SCHED_PREFIX=../../sched
+SCHED_PREFIX=../../aos
 
 CC=avr-gcc
 OBJC=avr-objcopy
@@ -29,7 +29,7 @@ libpca.a:
 	$(MAKE) -C $(PCA_PREFIX)
 
 libsched.a:
-	@echo -e "\tBUILDING SCHEDULER LIB"
+	@echo -e "\tBUILDING AOS LIB"
 	$(MAKE) -C $(SCHED_PREFIX)
 
 $(TARGET): $(COBJ) $(LIBS)

@@ -1,5 +1,5 @@
 #include "serial.h"
-#include "sched.h"
+#include "aos.h"
 
 #include <stdio.h>
 #include <avr/io.h>
@@ -12,22 +12,20 @@
 void task1(void) {
 	
 	PORTB = 0x00;
-	unsigned int x = 0;
-	for(x = 0; x < 32768; x++);
-	for(x = 0; x < 32768; x++);
-	for(x = 0; x < 32768; x++);
+	_delay_ms(500);
+
 	PORTB = 0xff;
+	_delay_ms(500);
 
 }
 
 void task2(void) {
 	
 	PORTD = 0x00;
-	unsigned int x = 0;
-	for(x = 0; x < 32768; x++);
-	for(x = 0; x < 32768; x++);
-	for(x = 0; x < 32768; x++);
+	_delay_ms(500);
+
 	PORTD = 0xff;
+	_delay_ms(500);
 }
 
 
@@ -38,6 +36,7 @@ int main(void)
 	serial_install_stdio();
 	serial_flush();
 
+	aos_init(SCHED_TICK_FREQUENCY);
 
 	return 0;
 }
