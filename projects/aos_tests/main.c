@@ -1,6 +1,5 @@
 #include "serial.h"
 #include "aos.h"
-#include "ctx.h"
 
 #include <stdio.h>
 #include <avr/io.h>
@@ -34,11 +33,14 @@ void task2(void *a_data UNUSED) {
 int main(void) 
 {
 	aos_init(SCHED_TICK_FREQUENCY);
-	struct task_cb *t1 = aos_task_create(task1, NULL, E_PRIORITY_NORMAL, 128);
+	struct task_cb *t1 = 
+		aos_task_create(task1, NULL, AOS_TASK_PRIORITY_IDLE, 128);
 
 	/* SP = (uint16_t)t1->ctx.sp; */
 	/* AOS_CTX_RESTORE(); */
 	/* __asm__ volatile ("ret"); */
+
+	aos_run();
 
 	return 0;
 }
