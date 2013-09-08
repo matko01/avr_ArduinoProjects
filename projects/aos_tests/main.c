@@ -25,7 +25,6 @@ void task2(void *a_data UNUSED) {
 
 void task3(void *a_data UNUSED) {
 	uint32_t a = 0;
-	uint8_t tmp;
 	while (1) {
 		if (!(a%8192)) {
 			PORTC ^= 0x01;
