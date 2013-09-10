@@ -26,11 +26,16 @@ void task2(void *a_data UNUSED) {
 void task3(void *a_data UNUSED) {
 	uint32_t a = 0;
 	while (1) {
-		if (!(a%8192)) {
+		if (!(a%32768)) {
 			PORTC ^= 0x01;
 		}
 		a++;
 	}
+}
+
+void hook_task(void) {
+	PORTB ^= 0xff;
+	_delay_ms(250);
 }
 
 int main(void) {
@@ -41,16 +46,16 @@ int main(void) {
 
 	aos_init(SCHED_TICK_FREQUENCY);
 
-	/* aos_common_hook_install(AOS_HOOK_IDLE, task1); */
+	/* aos_common_hook_install(AOS_HOOK_IDLE, hook_task); */
 
 	struct task_cb *t1 UNUSED = 
-		aos_task_create(task1, NULL, AOS_TASK_PRIORITY_IDLE, 32);
+		aos_task_create(task1, NULL, AOS_TASK_PRIORITY_LOW, 32);
 
 	struct task_cb *t2 UNUSED =
-		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_IDLE, 32);
+		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_LOW, 32);
 
 	struct task_cb *t3 UNUSED =
-		aos_task_create(task3, NULL, AOS_TASK_PRIORITY_IDLE, 32);
+		aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 32);
 
 	aos_run();
 	return 0;

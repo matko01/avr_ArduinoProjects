@@ -10,7 +10,7 @@ SCHED_PREFIX=../../aos
 CC=avr-gcc
 OBJC=avr-objcopy
 MCU=atmega328p
-CFLAGS=-I. -I$(PCA_PREFIX)/include/ -I$(SCHED_PREFIX) -Wall -O2 -DF_CPU=16000000UL -std=c99
+CFLAGS=-I. -I$(PCA_PREFIX)/include/ -I$(SCHED_PREFIX) -Wall -Os -DF_CPU=16000000UL -std=c99 -g
 LDFLAGS=-laos -lpca -L$(SCHED_PREFIX) -L$(PCA_PREFIX) 
 
 ISPPORT=/dev/ttyACM0
