@@ -14,14 +14,16 @@ void task1(void *a_data UNUSED) {
 
 	while (1) {
 		PORTB++;
-		aos_timer_wait(&tm, 50);
+		aos_timer_wait(&tm, 400);
 	}
 }
 
 void task2(void *a_data UNUSED) {
+	struct aos_timer tm;
+
 	while (1) {
-		_delay_ms(250);
 		PORTD ^= 0x01;
+		aos_timer_wait(&tm, 200);
 	}
 }
 
@@ -55,10 +57,10 @@ int main(void) {
 	struct task_cb *t1 UNUSED = 
 		aos_task_create(task1, NULL, AOS_TASK_PRIORITY_NORMAL, 64);
 
-	/* struct task_cb *t2 UNUSED = */
-	/* 	aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 32); */
+	struct task_cb *t2 UNUSED =
+		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 32);
 
-	/* t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 32); */
+	t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 32);
 
 	aos_run();
 	return 0;
