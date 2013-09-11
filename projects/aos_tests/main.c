@@ -6,13 +6,15 @@
 
 #include "timer_common.h"
 
-// tick every 1 ms
+// tick every 10 ms
 #define SCHED_TICK_FREQUENCY 100
 
 void task1(void *a_data UNUSED) {
+	struct aos_timer tm;
+
 	while (1) {
-		_delay_ms(500);
 		PORTB++;
+		aos_timer_wait(&tm, 50);
 	}
 }
 
@@ -48,15 +50,15 @@ int main(void) {
 
 	aos_init(SCHED_TICK_FREQUENCY);
 
-	aos_common_hook_install(AOS_HOOK_IDLE, hook_task);
+	/* aos_common_hook_install(AOS_HOOK_IDLE, hook_task); */
 
-	/* struct task_cb *t1 UNUSED =  */
-	/* 	aos_task_create(task1, NULL, AOS_TASK_PRIORITY_NORMAL, 32); */
+	struct task_cb *t1 UNUSED = 
+		aos_task_create(task1, NULL, AOS_TASK_PRIORITY_NORMAL, 64);
 
 	/* struct task_cb *t2 UNUSED = */
 	/* 	aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 32); */
 
-	t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 32);
+	/* t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 32); */
 
 	aos_run();
 	return 0;
