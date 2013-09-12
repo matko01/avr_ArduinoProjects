@@ -58,7 +58,7 @@ int main(void) {
 	struct task_cb *t2 UNUSED =
 		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 64);
 
-	t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 64);
+	/* t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_HIGH, 64); */
 
 	aos_run();
 	return 0;
