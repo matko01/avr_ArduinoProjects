@@ -7,7 +7,7 @@
 #include "timer_common.h"
 
 // tick every 10 ms
-#define SCHED_TICK_FREQUENCY 1
+#define SCHED_TICK_FREQUENCY 100
 
 static struct aos_sem semaphore;
 
