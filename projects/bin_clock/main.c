@@ -5,9 +5,24 @@
 
 
 void task_timer(void *a_data) {
+	struct aos_timer tm;
+	struct ctx *pctx = (struct ctx *)a_data;
 
+	sched_systime_t tick1 = aos_common_systime_get(),
+					tick2 = 0,
+					delta = 0;
+
+	// count ticks
 	while (1) {
+		tick2 = aos_common_systime_get();
+		delta = tick2 - tick1;
 
+		if (delta > 1000) {
+			bc_inc_time(&pctx->g_time);
+			tick1 = aos_common_systime_get() + (1000 - delta);
+		}
+		
+		aos_timer_wait(&tm, 300);
 	}
 }
 
