@@ -1,6 +1,7 @@
 TARGET=binary_clock
 SOURCES= \
 		 util.c \
+		 tm.c \
 		 main.c
 		
 

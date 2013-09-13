@@ -7,6 +7,7 @@
 void task_timer(void *a_data) {
 
 	while (1) {
+
 	}
 }
 
@@ -22,34 +23,6 @@ void task_serial_sync(void *a_data) {
 }
 
 
-
-/* void bclk_inc_time(void *a_data) { */
-/* 	struct tm *data = (struct tm *)a_data; */
-/*  */
-/* 	// protect this section to prevent displaying garbage */
-/* 	// even for a very short fragment of time */
-/* 	g_conversion = 0x01; */
-/*  */
-/* 	// increment by a second */
-/* 	_bcd_correct(++data->secs); */
-/*  */
-/* 	if (data->secs >= 0x60) { */
-/* 		data->secs = 0x00; */
-/* 		_bcd_correct(++data->mins); */
-/* 	} */
-/*  */
-/* 	if (data->mins >= 0x60) { */
-/* 		data->mins = 0x00; */
-/* 		_bcd_correct(++data->hours); */
-/* 	} */
-/*  */
-/* 	if (data->hours >= 0x24) { */
-/* 		data->hours = 0x00; */
-/* 	} */
-/*  */
-/* 	// unprotect */
-/* 	g_conversion = 0x00; */
-/* } */
 
 
 /**

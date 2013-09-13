@@ -11,16 +11,7 @@
 
 // own
 #include "util.h"
-
-/**
- * @brief time structure
- */
-struct tm {
-	unsigned char hours;
-	unsigned char mins;
-	unsigned char secs;
-};
-
+#include "tm.h"
 
 /**
  * @brief task enumeration
