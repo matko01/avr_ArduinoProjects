@@ -19,6 +19,7 @@
 enum tasks {
 	TASK_TIMER = 0,
 	TASK_SERIAL_SYNC,
+	TASK_MULTIPLEXER,
 
 	// used for allocations
 	TASK_LAST
@@ -29,8 +30,9 @@ enum tasks {
  * @brief system context
  */
 struct ctx {
-	struct tm g_time;
+	struct tm g_time;	
 	struct task_cb *tasks[TASK_LAST];
+	uint8_t row;
 };
 
 #endif /* __MAIN_H__ */
