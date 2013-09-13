@@ -1,16 +1,20 @@
 TARGET=binary_clock
-SOURCES=main.c
-
+SOURCES= \
+		 util.c \
+		 main.c
+		
 
 DEPS=
+LIBS=libaos.a libpca.a
 COBJ=$(SOURCES:.c=.o)
 PCA_PREFIX=../../pca
+AOS_PREFIX=../../aos
 
 CC=avr-gcc
 OBJC=avr-objcopy
 MCU=atmega328p
-CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=c99
-LDFLAGS=-lpca -L$(PCA_PREFIX)
+CFLAGS=-I. -I$(PCA_PREFIX)/include/ -I$(AOS_PREFIX) -Wall -Os -DF_CPU=16000000UL -std=c99
+LDFLAGS=-laos -lpca -L$(AOS_PREFIX) -L$(PCA_PREFIX) 
 
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
@@ -27,13 +31,18 @@ libpca.a:
 	@echo -e "\tBUILDING PURE C ARDUINO LIB"
 	$(MAKE) -C $(PCA_PREFIX)
 
-$(TARGET): $(COBJ) libpca.a
+libaos.a:
+	@echo -e "\tBUILDING AOS LIB"
+	$(MAKE) -C $(AOS_PREFIX)
+
+$(TARGET): $(COBJ) $(LIBS)
 	@echo -e "\tLINKING CC" $<
 	@$(CC) -mmcu=$(MCU) -o $(TARGET) $(COBJ) $(LDFLAGS)
 	$(OBJC) -O ihex -R .eeprom $(TARGET) $(TARGET).hex
 	$(OBJC) -O binary -R .eeprom $(TARGET) $(TARGET).bin
 
 clean:
+	$(MAKE) -C $(AOS_PREFIX) clean
 	$(MAKE) -C $(PCA_PREFIX) clean
 	@echo ========== cleanup ========== 
 	rm -rf *.o *.bin *.hex $(TARGET)	

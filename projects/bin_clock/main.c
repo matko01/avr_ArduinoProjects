@@ -1,19 +1,26 @@
-#include "serial.h"
-#include "slip.h"
+#include "main.h"
 
-#include "aos.h"
+// 1 ms tick
+#define AOS_TICK_FREQUENCY 1000
 
-// time struct
-static struct tm g_time  = { 0x00 };
 
-static void _bcd_correct(unsigned char *a_bcd) {
-	unsigned char x = 0;
-	for (; x<2; x++) {
-		if ((*a_bcd & (0x0f << (4*x))) > (0x09 << (4*x))) {
-				*a_bcd += (0x06 << (4*x));
-		}
+void task_timer(void *a_data) {
+
+	while (1) {
 	}
 }
+
+
+void task_serial_sync(void *a_data) {
+
+	serial_init(E_BAUD_9600);	
+	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_flush();
+
+	while (1) {
+	}
+}
+
 
 
 /* void bclk_inc_time(void *a_data) { */
@@ -45,25 +52,24 @@ static void _bcd_correct(unsigned char *a_bcd) {
 /* } */
 
 
+/**
+ * @brief entry point
+ */
+int main(void) {
 
+	// system context
+	struct ctx sctx;
 
+	// initialize the OS
+	aos_init(AOS_TICK_FREQUENCY);
 
+	// create timer task 
+	sctx.tasks[TASK_TIMER] = 
+		aos_task_create(task_timer, (void*)&sctx, AOS_TASK_PRIORITY_NORMAL, 64);
 
-void main(void)
-{
-	serial_init(E_BAUD_9600);	
-	serial_install_interrupts(SERIAL_RX_INTERRUPT);
-	serial_flush();
+	sctx.tasks[TASK_SERIAL_SYNC] = 
+		aos_task_create(task_serial_sync, (void*)&sctx, AOS_TASK_PRIORITY_NORMAL, 64);
 
-
-
-	// TODO must be redesigned
-	/* // 256 hertz - ticks per second (system clock) */
-	/* sched_init(256); */
-
-	/* // increment clock */
-	/* sched_task_add(blck_inc_time, (void *)&g_time, 256); */
-
-	/* // run scheduled tasks */
-	/* while(1) sched_run(); */
+	aos_run();	
+	return 0;
 }
