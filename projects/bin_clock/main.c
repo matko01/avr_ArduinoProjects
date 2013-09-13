@@ -1,9 +1,10 @@
 #include "serial.h"
 #include "slip.h"
 
-static unsigned char g_conversion = 0x00;
-static struct tm g_time  = { 0x00 };
+#include "aos.h"
 
+// time struct
+static struct tm g_time  = { 0x00 };
 
 static void _bcd_correct(unsigned char *a_bcd) {
 	unsigned char x = 0;
@@ -15,44 +16,46 @@ static void _bcd_correct(unsigned char *a_bcd) {
 }
 
 
-void bclk_inc_time(void *a_data) {
-	struct tm *data = (struct tm *)a_data;
-
-	// protect this section to prevent displaying garbage
-	// even for a very short fragment of time
-	g_conversion = 0x01;
-
-	// increment by a second
-	_bcd_correct(++data->secs);
-
-	if (data->secs >= 0x60) {
-		data->secs = 0x00;
-		_bcd_correct(++data->mins);
-	}
-
-	if (data->mins >= 0x60) {
-		data->mins = 0x00;
-		_bcd_correct(++data->hours);
-	}
-
-	if (data->hours >= 0x24) {
-		data->hours = 0x00;
-	}
-
-	// unprotect
-	g_conversion = 0x00;
-}
-
-
+/* void bclk_inc_time(void *a_data) { */
+/* 	struct tm *data = (struct tm *)a_data; */
+/*  */
+/* 	// protect this section to prevent displaying garbage */
+/* 	// even for a very short fragment of time */
+/* 	g_conversion = 0x01; */
+/*  */
+/* 	// increment by a second */
+/* 	_bcd_correct(++data->secs); */
+/*  */
+/* 	if (data->secs >= 0x60) { */
+/* 		data->secs = 0x00; */
+/* 		_bcd_correct(++data->mins); */
+/* 	} */
+/*  */
+/* 	if (data->mins >= 0x60) { */
+/* 		data->mins = 0x00; */
+/* 		_bcd_correct(++data->hours); */
+/* 	} */
+/*  */
+/* 	if (data->hours >= 0x24) { */
+/* 		data->hours = 0x00; */
+/* 	} */
+/*  */
+/* 	// unprotect */
+/* 	g_conversion = 0x00; */
+/* } */
 
 
 
 
-int main(void)
+
+
+void main(void)
 {
 	serial_init(E_BAUD_9600);	
 	serial_install_interrupts(SERIAL_RX_INTERRUPT);
 	serial_flush();
+
+
 
 	// TODO must be redesigned
 	/* // 256 hertz - ticks per second (system clock) */
@@ -63,5 +66,4 @@ int main(void)
 
 	/* // run scheduled tasks */
 	/* while(1) sched_run(); */
-	return 0;
 }

@@ -12,7 +12,7 @@
 static struct aos_sem semaphore;
 
 void task1(void *a_data UNUSED) {
-	struct aos_timer tm;
+	struct aos_timer tm UNUSED;
 	DDRB = 0xff;
 	aos_sem_init(&semaphore);
 
