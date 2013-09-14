@@ -24,14 +24,14 @@ void task_timer(void *a_data) {
 		delta = tick2 - tick1;
 
 		// have a second passed by ?
-		if (delta > (AOS_TICK_FREQUENCY << 1)) {
+		if (delta >= (AOS_TICK_FREQUENCY << 1)) {
 			bc_inc_time(&pctx->g_time);
 			tick1 = aos_common_systime_get() + ((AOS_TICK_FREQUENCY << 1) - delta);
 		}
 
 		// sleep for a while
 		// no need to run this with full speed
-		aos_timer_wait(&tm, 30);
+		aos_timer_wait(&tm, 10);
 	}
 }
 
@@ -50,7 +50,7 @@ void task_multiplexer(void *a_data) {
 
 		// segment selector
 		pctx->row = (pctx->row == 0x20) ? 0x01 : (pctx->row << 1);		
-		aos_timer_wait(&tm, 8);
+		aos_timer_wait(&tm, 30);
 	}
 
 }
