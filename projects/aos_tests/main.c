@@ -1,3 +1,4 @@
+/* #include "serial.h" */
 #include "aos.h"
 
 #include <avr/io.h>
@@ -22,13 +23,23 @@
 /* 	} */
 /* } */
 
+extern volatile struct aos_sys _g_sys;
+
 void task2(void *a_data UNUSED) {
 	struct aos_timer tm;
-	DDRD = 0xff;
+	/* serial_init(E_BAUD_9600);	 */
+	/* serial_install_interrupts(SERIAL_RX_INTERRUPT);	 */
+	/* serial_flush(); */
+	/* serial_install_stdio(); */
+	DDRB = 0xff;
 	while (1) {
-		PORTD++;
-		/* aos_sem_v(&semaphore); */
-		aos_timer_wait(&tm, 50);
+
+		PORTB = _g_sys.ticks;
+		/* printf("Delta: %d\n", */
+		/* 		aos_common_systime_get()); */
+
+		aos_timer_wait(&tm, 100);
+
 	}
 }
 
@@ -54,19 +65,28 @@ void hook_task(void) {
 }
 
 int main(void) {
+	DDRC = 0xff;
+	PORTC ^= 0xff;
+
+	/* serial_init(E_BAUD_9600);	 */
+	/* serial_install_interrupts(SERIAL_RX_INTERRUPT);	 */
+	/* serial_flush(); */
+	/* serial_install_stdio(); */
+
+	/* printf("init\n"); */
 
 
 	aos_init(SCHED_TICK_FREQUENCY);
 
-	aos_common_hook_install(AOS_HOOK_STACK_CORRUPTION, hook_task);
+	/* aos_common_hook_install(AOS_HOOK_STACK_CORRUPTION, hook_task); */
 
 	/* struct task_cb *t1 UNUSED =  */
 	/* 	aos_task_create(task1, NULL, AOS_TASK_PRIORITY_LOW, 48); */
 
 	struct task_cb *t2 UNUSED =
-		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 48);
+		aos_task_create(task2, NULL, AOS_TASK_PRIORITY_NORMAL, 512);
 
-	t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_NORMAL, 48);
+	/* t3 = aos_task_create(task3, NULL, AOS_TASK_PRIORITY_NORMAL, 48); */
 
 	aos_run();
 	return 0;
