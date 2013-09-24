@@ -32,7 +32,7 @@ uint16_t checkcrc(unsigned char *data, unsigned char len) {
 int main(void)
 {
 	serial_init(E_BAUD_4800);	
-	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
 	serial_flush();
 
 	while(1) {

@@ -32,7 +32,7 @@ static void play(e_timer a_pin, struct note *a_note) {
 int main(void)
 {
 	serial_init(E_BAUD_38400);	
-	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
 	serial_flush();
 
 	beeper_init(PIN);

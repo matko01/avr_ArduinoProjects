@@ -67,7 +67,7 @@ int main(void)
 {
 
 	serial_init(E_BAUD_115200);	
-	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
 	serial_install_stdio();
 	serial_flush();
 

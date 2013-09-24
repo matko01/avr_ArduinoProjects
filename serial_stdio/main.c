@@ -11,7 +11,7 @@
 int main(void)
 {
 	serial_init(E_BAUD_4800);	
-	serial_install_interrupts(SERIAL_RX_INTERRUPT);
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
 	serial_flush();
 
 	serial_install_stdio();
