@@ -163,9 +163,14 @@ sub slip_send {
 			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
 
 	my $size = @_;
+	
+	# one note is defined by two variables: frequency and duration
+	# so the total length of the input array must be divided by two 
+	# in order to determine the actual number of nodes
 	my $notes = int($size/2);
 	my $crc = crc16( pack "CCCS*", (0,0,$notes,@_));
 
+	# return the byte string containing the data to be sent
 	return pack "CSCS${size}C", SLIP_END, $crc, $notes, @data, SLIP_END; 
 }
 
