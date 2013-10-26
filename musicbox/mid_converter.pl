@@ -7,11 +7,14 @@ $|++;
 use Device::SerialPort;
 use MIDI::ALSA(SND_SEQ_EVENT_PORT_UNSUBSCRIBED);
 use Digest::CRC qw/crc16/;
+use Data::Dumper;
+
 
 my %g_dev = (
 	dev => '/dev/ttyACM0',
 	speed => '38400',
 );
+
 
 # midi notes
 my @notes = (
@@ -145,6 +148,7 @@ my @notes = (
 		12_543.8539514160,
 ); # notes
 
+
 use constant {
 	SLIP_END => 0300,
 	SLIP_ESC => 0333,
@@ -152,17 +156,24 @@ use constant {
 	SLIP_ESC_ESC => 0335,
 };
 
+
 sub slip_send {
 	my @data = map { 
 		$_ == SLIP_END ? (SLIP_ESC, SLIP_ESC_END) : 
 			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
 
 	my $size = @_;
+	
+	# one note is defined by two variables: frequency and duration
+	# so the total length of the input array must be divided by two 
+	# in order to determine the actual number of nodes
 	my $notes = int($size/2);
 	my $crc = crc16( pack "CCCS*", (0,0,$notes,@_));
 
+	# return the byte string containing the data to be sent
 	return pack "CSCS${size}C", SLIP_END, $crc, $notes, @data, SLIP_END; 
 }
+
 
 my $port = new Device::SerialPort($g_dev{dev}); 
 $port->baudrate($g_dev{speed}); 
@@ -173,15 +184,11 @@ $port->dtr_active(1);
 $port->write_settings();
 $port->purge_all;
 
+
 # wait for the reset
 sleep 2;
 MIDI::ALSA::client('Arduino MIDI Beeper', 1, 1, 0);
 
-use Data::Dumper;
-
-my $cnt = 0;
-my @channel = @ARGV;
-my $accumulate = 16;
 
 while (1) {
 	my @alsa_event = MIDI::ALSA::input();
