@@ -205,9 +205,9 @@ while (1) {
 	next unless (scalar @ARGV == 0 || grep { $_ == $score_event[3] } @ARGV );
 
 	# calculate the pitch and duration
-	my $note = int($notes[$score_event[4] % 128]);
+	my $note = int($notes[($score_event[4] % 96) + 32]);
 	# my $dur = int( $score_event[2]/1000 - 0.5);
-	my $dur = 50;
+	my $dur = 160;
 
 	my $send = $port->write(slip_send($note, $dur));
 	while (!$port->write_drain) {}

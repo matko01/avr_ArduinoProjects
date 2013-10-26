@@ -20,14 +20,14 @@ struct packet {
 static void play(e_timer a_pin, struct note *a_note) {
 	if (a_note->note || a_note->duration) {
 		beeper_beep(a_pin, a_note->note, a_note->duration);
-		beeper_block(a_pin);
+		/* beeper_block(a_pin); */
 	}
 	else {
 		beeper_off(a_pin);
 	}
 }
 
-#define PIN E_TIMER1 // PORTD6
+#define PIN E_TIMER0 // PORTD6
 
 int main(void)
 {
