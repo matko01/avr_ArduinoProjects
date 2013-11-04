@@ -8,8 +8,8 @@ PCA_PREFIX=../../pca
 CC=avr-gcc
 OBJC=avr-objcopy
 MCU=atmega328p
-CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=c99
-LDFLAGS=-lpca -L$(PCA_PREFIX)
+CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=c99 -ffunction-sections
+LDFLAGS=-lpca -L$(PCA_PREFIX) -Wl,-gc-sections -lm
 
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
