@@ -13,7 +13,7 @@ use Time::HiRes qw/usleep/;
 
 my %g_dev = (
 	dev => '/dev/ttyACM0',
-	speed => '115200',
+	speed => '230400',
 );
 
 
@@ -26,14 +26,25 @@ use constant {
 
 
 sub slip_send {
+	my $chunk = shift;
+
 	my @data = map { 
 		$_ == SLIP_END ? (SLIP_ESC, SLIP_ESC_END) : 
 			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
 
-	my $size = scalar @data;
-	my $crc = crc16( pack "C*", (0,0,$size,@_));
-	# return pack "CSC*", (SLIP_END, $crc, @data, SLIP_END); 
-	return pack "CSC*", (SLIP_END, $crc, $size, @data, SLIP_END); 
+	my $crc = crc16( pack "C*", (0,0, $chunk, @_));
+	return pack "CSC*", (SLIP_END, $crc, $chunk, @data, SLIP_END); 
+}
+
+
+sub slip_send16 {
+	my @data = map { 
+		$_ == SLIP_END ? (SLIP_ESC, SLIP_ESC_END) : 
+			($_ == SLIP_ESC ? (SLIP_ESC, SLIP_ESC_ESC) : $_) } @_ ;
+
+	my $samples = int((scalar @_)/2);
+	my $crc = crc16( pack "C*", (0,0, $samples, @_));
+	return pack "CSC*", (SLIP_END, $crc, $samples, @data, SLIP_END); 
 }
 
 
@@ -92,8 +103,12 @@ my @header = unpack "a4la4a4ls2l2s2a4l", $header;
 die "Header is empty\n" unless scalar @header;
 die "File is not a WAVE RIFF file\n"
 	unless ($header[0] =~ /RIFF/ && $header[2] =~ /WAVE/);
-die "File is [$header[7]] Hz/$header[10]. Should be 8000/8bit\n"
-	unless ($header[7] == 8000 && $header[10] == 8);
+
+die "File is [$header[7]] Hz/$header[10]. Should be 8000/8bit or 16000/8bit or 8000/16bit\n"
+	unless (($header[7] == 16000 ||
+			$header[7] == 8000) && 
+			($header[10] == 8 ||
+			 $header[10] == 16));
 
 
 # getchar wrapper for slip receive
@@ -106,28 +121,34 @@ sub serial_getc {
 
 
 my $read = $offset;
-# my $cnt = 0;
+
+my $wait_time = 5000;
+my $chunk = 128;
+
+if ($header[7] == 8000) {
+	if ($header[10] == 16) {
+		$wait_time = 2000;
+		$chunk = 64;
+	}
+	else {
+		$wait_time = 12000;
+	}
+}
+
 
 while ($read) {
-	# my $dreq = slip_recv(\&serial_getc);
-	# next unless ($dreq =~ /DQ/);
 
-	my ($cin, $cdata) = $port->read(4);
-	usleep(1900) if ($cdata =~ /WAIT/);
+	my ($cin, $cdata) = $port->read(1);
+	usleep($wait_time) if ($cdata =~ /W/);
 	
-
 	print "Sending data. Offset: [$offset]\n";
 
 	my $data = 0x00;
-	$read = read $g_fh, $data, 64;
+	$read = read $g_fh, $data, 128;
 	$offset += $read;
 
-	$port->write(slip_send(unpack "C*", $data));
+	$port->write(slip_send($chunk, unpack "C*", $data));
 	until ($port->write_drain) {}
-
-	# 64 * 0.000125 = 0.0025
-	# usleep(2500) if (!($cnt % 2));
-	# $cnt++;
 }
 
 close ($g_fh);
