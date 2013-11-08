@@ -13,10 +13,11 @@
 #define MODE_8K_8B 0
 #define MODE_8K_16B 1
 #define MODE_16K_8B 2
+#define MODE_18K_8B 3
 
 
 /// redefine this to any of the values above to change the mode
-#define MODE MODE_8K_16B
+#define MODE MODE_16K_8B
 
 
 
@@ -122,11 +123,11 @@ int main(void)
 
 	max_samples = PWM_SAMPLES_BUFFER * PWM_BUFFERS;
 
-	/* tpwm_fpwm_init(E_TIMER1); */
-
 #if MODE == MODE_8K_16B
+	/* tpwm_fpwm_init(E_TIMER1, E_PWM_DOUBLE); */
 	tpwm_pwm_init(E_TIMER1, E_PWM_DOUBLE);
 #else
+	/* tpwm_fpwm_init(E_TIMER1, E_PWM_SINGLE); */
 	tpwm_pwm_init(E_TIMER1, E_PWM_SINGLE);
 #endif
 
@@ -138,6 +139,8 @@ int main(void)
 
 #if MODE == MODE_16K_8B
 	uint32_t pocr = _timer_freq_prescale(E_TIMER0, 8000, 255);
+#elif MODE == MODE_18K_8B
+	uint32_t pocr = _timer_freq_prescale(E_TIMER0, 9000, 255);
 #else
 	uint32_t pocr = _timer_freq_prescale(E_TIMER0, 4000, 255);
 #endif

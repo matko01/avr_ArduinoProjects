@@ -88,7 +88,7 @@ $port->purge_all;
 sleep 2;
 
 
-my $wav = shift || die "<wpwm.pl <8kHz 8bit mono wave-file>\n";
+my $wav = shift || die "<wpwm.pl <8/16/18kHz 8/16bit mono wave-file>\n";
 open my $g_fh, '<', $wav ||
 	die "Unable to open file [$wav]\n";
 
@@ -104,8 +104,9 @@ die "Header is empty\n" unless scalar @header;
 die "File is not a WAVE RIFF file\n"
 	unless ($header[0] =~ /RIFF/ && $header[2] =~ /WAVE/);
 
-die "File is [$header[7]] Hz/$header[10]. Should be 8000/8bit or 16000/8bit or 8000/16bit\n"
+die "File is [$header[7]] Hz/$header[10]. Should be 8000/8bit or 16000/8bit or 8000/16bit or 18000/8bit\n"
 	unless (($header[7] == 16000 ||
+			 $header[7] == 18000 ||
 			$header[7] == 8000) && 
 			($header[10] == 8 ||
 			 $header[10] == 16));
@@ -133,6 +134,9 @@ if ($header[7] == 8000) {
 	else {
 		$wait_time = 12000;
 	}
+}
+elsif ($header[7] == 18000) {
+	$wait_time = 1000;
 }
 
 

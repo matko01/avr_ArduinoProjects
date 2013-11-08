@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ $# -lt 1 ]; then
-	echo "player.sh <16b | 16k | 8k> <audiofile(s)> "
+	echo "player.sh <16b | 16k | 8k | 18k> <audiofile(s)> "
 	exit
 fi
 
@@ -16,13 +16,18 @@ case "$1" in
 	samples=8
 	;;
 
+	"18k")
+	bitrate=18000
+	samples=8
+	;;
+
 	"8k")
 	bitrate=8000
 	samples=8
 	;;
 	
 	*)
-	echo "Specify the audio format as a first argument <16b | 16k | 8k>"
+	echo "Specify the audio format as a first argument <16b | 16k | 8k | 18k>"
 	exit
 	;;
 esac
