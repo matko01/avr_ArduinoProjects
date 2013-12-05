@@ -2,6 +2,13 @@
 #include "pca.h"
 
 
+void tmp_setup(volatile struct temp_msr_ctx *a_ctx) {
+	// update min/max values
+	a_ctx->temp_min = 0xffff;
+	a_ctx->temp_max = 0x00;
+}
+
+
 void tmp_update_tv(volatile struct temp_msr_ctx *a_ctx) {
 	if ((TEMP_MEASUREMENT_TRIGGERED == a_ctx->state) && a_ctx->tv) {
 		if (!--a_ctx->tv)

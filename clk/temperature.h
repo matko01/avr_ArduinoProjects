@@ -33,9 +33,11 @@ struct temp_msr_ctx {
 };
 
 
+void tmp_setup(volatile struct temp_msr_ctx *a_ctx);
 void tmp_update_tv(volatile struct temp_msr_ctx *a_ctx);
 void tmp_update_measurements(volatile struct temp_msr_ctx *a_ctx, struct soft_ow *a_bus);
 void tmp_trigger_measurement(volatile struct temp_msr_ctx *a_ctx, struct soft_ow *a_bus);
+
 
 #endif /* TMP_CTX_H_INZKGQ4V */
 

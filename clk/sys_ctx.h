@@ -6,6 +6,31 @@
 #include "temperature.h"
 
 /**
+ * @brief default magic identifier value
+ */
+#define SETTINGS_MAGIC_ID 0x66
+
+
+/**
+ * @brief permanent settings
+ */
+struct sys_settings {
+
+	// settings magic identifier
+	// if presents - it means that the clock has been initialized
+	uint8_t magic;
+
+	// lcd brightness
+	// 0 - disabled
+	uint8_t lcd_brightness;
+
+	// back-light on time
+	// 0 - always on	
+	uint8_t lcd_bt_time;
+};
+
+
+/**
  * @brief system context
  *
  * Contains all system variables
@@ -24,13 +49,9 @@ struct sys_ctx {
 	// temperature
 	volatile struct temp_msr_ctx temp_ctx;
 
-	// lcd brightness
-	// 0 - disabled
-	uint8_t lcd_brightness;
+	// system settings
+	struct sys_settings settings;
 
-	// back-light on time
-	// 0 - always on	
-	uint8_t lcd_bt_time;
 };
 
 #endif /* __SYS_CTX_H__ */

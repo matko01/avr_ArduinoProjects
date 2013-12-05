@@ -1,6 +1,6 @@
 TARGET=clk
 SOURCES= \
-		 setup.c \
+		 sys_common.c \
 		 interrupts.c \
 		 temperature.c \
 		 main.c
