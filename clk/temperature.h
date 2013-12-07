@@ -8,7 +8,7 @@
  * @brief defines number of Timer overflow interrupts 
  * needed to finish the temperature measurement
  */
-#define TEMPERATURE_MEASUREMENT_INTERVAL 250
+#define TEMPERATURE_MEASUREMENT_INTERVAL 56
 
 
 /**
@@ -25,18 +25,18 @@ typedef enum _temp_msr_state_t {
  * @brief temperature measurement ctx
  */
 struct temp_msr_ctx {
-	uint16_t tv;
-	temp_msr_state_t state;
-	uint16_t temp;
-	uint16_t temp_max;
-	uint16_t temp_min;
+	volatile uint16_t tv;
+	volatile uint8_t state;
+	volatile uint16_t temp;
+	volatile uint16_t temp_max;
+	volatile uint16_t temp_min;
 };
 
 
-void tmp_setup(volatile struct temp_msr_ctx *a_ctx);
+uint8_t tmp_setup(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
 void tmp_update_tv(volatile struct temp_msr_ctx *a_ctx);
-void tmp_update_measurements(volatile struct temp_msr_ctx *a_ctx, struct soft_ow *a_bus);
-void tmp_trigger_measurement(volatile struct temp_msr_ctx *a_ctx, struct soft_ow *a_bus);
+void tmp_update_measurements(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
+void tmp_trigger_measurement(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
 
 
 #endif /* TMP_CTX_H_INZKGQ4V */

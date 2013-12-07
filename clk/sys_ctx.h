@@ -40,7 +40,7 @@ struct sys_ctx {
 	
 	// buses
 	volatile struct twi_ctx *twi_ctx;
-	struct soft_ow sow_ctx;
+	volatile struct soft_ow sow_ctx;
 	struct dev_hd44780_ctx lcd_ctx;
 	
 	// time
@@ -51,6 +51,9 @@ struct sys_ctx {
 
 	// system settings
 	struct sys_settings settings;
+
+	// lcd timeout
+	volatile uint16_t lcd_backlight_timer;
 
 };
 

@@ -3,6 +3,7 @@ SOURCES= \
 		 sys_common.c \
 		 interrupts.c \
 		 temperature.c \
+		 lcd.c \
 		 main.c
 
 DEPS=
