@@ -2,6 +2,7 @@
 
 
 void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
+	
 	// lcd setup
 	a_lcd_ctx->rs.port = &LCD_RS_PORT;
 	a_lcd_ctx->rs.pin = LCD_RS_PIN;
@@ -15,7 +16,7 @@ void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
 	}
 
 	// display specifics
-	a_lcd_ctx->lines = 2;
+	a_lcd_ctx->lines = LCD_NUMBER_OF_LINES;
 	a_lcd_ctx->font = HD44780_FONT_5X8;
 
 	// initialize the device

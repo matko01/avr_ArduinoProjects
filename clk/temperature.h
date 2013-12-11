@@ -8,7 +8,7 @@
  * @brief defines number of Timer overflow interrupts 
  * needed to finish the temperature measurement
  */
-#define TEMPERATURE_MEASUREMENT_INTERVAL 56
+#define TEMPERATURE_MEASUREMENT_INTERVAL 52
 
 
 /**

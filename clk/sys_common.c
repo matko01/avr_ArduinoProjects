@@ -3,17 +3,18 @@
 
 #include <avr/eeprom.h>
 #include <avr/power.h>
+#include <util/delay.h>
 
 
 void timers_setup() {
 	power_timer0_enable();
 	power_timer2_enable();
 
-	// fast PWM mode both OC2A (PB3) and OC2B (PD3)
+	// fast PWM mode on OC2A (PB3) - OC2B (PD3)
 	// in non interting mode
 	// prescaler = 256
 	TCCR2A = 0xa3;
-	TCCR2B = 0x06;
+	TCCR2B = 0x01;
 
 	// timer 0 in normal mode (61 Hz)
 	// will be used as a time source
@@ -30,9 +31,17 @@ void timers_setup() {
 	// enable output on PORTB3	
 	OCR2A = 0x00;
 	DDRB |= _BV(PORTB3);
+	DDRD |= _BV(PORTD3);
 }
 
-#include <util/delay.h>
+
+void led_setup(volatile struct sys_ctx *a_ctx) {
+	a_ctx->led.port = &RTC_LED_PORT;
+	a_ctx->led.pin = RTC_LED_PIN;
+
+	GPIO_CONFIGURE_AS_OUTPUT(&a_ctx->led);
+	GPIO_SET_HIGH(&a_ctx->led);
+}
 
 
 void rtc_setup(volatile struct twi_ctx *a_ctx) {
@@ -89,7 +98,8 @@ void sys_settings_get(struct sys_settings *a_ss) {
 	// any settings yet
 	if (SETTINGS_MAGIC_ID != a_ss->magic) {
 		a_ss->magic = SETTINGS_MAGIC_ID;
-		a_ss->lcd_brightness = 255;
+		a_ss->lcd_brightness = 0xff;
+		a_ss->lcd_contrast = 0xff;
 		a_ss->lcd_bt_time = 0;
 
 		// initialize
@@ -98,3 +108,63 @@ void sys_settings_get(struct sys_settings *a_ss) {
 }
 
 
+void displayTime(volatile struct sys_ctx *a_ctx) {
+
+	const char *weekdays[] = {
+		"Mon",
+		"Tue",
+		"Wed",
+		"Thu",
+		"Fri",
+		"Sat",
+		"Sun"
+	};
+	uint8_t x = a_ctx->tm.dow ? a_ctx->tm.dow - 1 : 0x00;
+
+	if (a_ctx->tm.mode_ampm_hour & 0x40) {
+		// 12 hour mode
+		snprintf((char *)a_ctx->display[0], 
+				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %s",
+				a_ctx->tm.mode_ampm_hour & 0x1f,
+				a_ctx->tm.min,
+				a_ctx->tm.ch_sec & 0x7f,
+				a_ctx->tm.mode_ampm_hour & 0x20 ? "PM" : "AM");
+	}
+	else {
+		snprintf((char *)a_ctx->display[0], 
+				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x",
+				a_ctx->tm.mode_ampm_hour & 0x3f,
+				a_ctx->tm.min,
+				a_ctx->tm.ch_sec & 0x7f);
+	}
+
+	snprintf((char *)a_ctx->display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x [%s]",
+			BCD2BIN(a_ctx->tm.year) + 2000,
+			a_ctx->tm.month,
+			a_ctx->tm.dom,
+			weekdays[x]); 
+
+	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE00_ADDR);
+	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+	
+	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE10_ADDR);
+	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+}
+
+
+
+void displayTemp(volatile struct sys_ctx *a_ctx) {
+	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Current: %2.02f\xdf%c",
+			((float)a_ctx->temp_ctx.temp)/16, 'C'); 
+
+	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
+	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+	
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "-/+ %2.02f %2.02f ",
+			((float)a_ctx->temp_ctx.temp_min)/16,
+			((float)a_ctx->temp_ctx.temp_max)/16); 
+
+	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
+	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+}

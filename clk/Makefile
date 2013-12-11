@@ -3,6 +3,7 @@ SOURCES= \
 		 sys_common.c \
 		 interrupts.c \
 		 temperature.c \
+		 fsm.c \
 		 lcd.c \
 		 main.c
 
@@ -22,7 +23,7 @@ CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=gnu99 \
 	   -ffreestanding \
 	   -fno-tree-scev-cprop \
 	   -fpack-struct
-LDFLAGS=-lpca -L$(PCA_PREFIX) -Wl,--gc-sections,--relax
+LDFLAGS=-lpca -L$(PCA_PREFIX) -Wl,--gc-sections,--relax,-u,vfprintf -lprintf_flt -lm
 
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools

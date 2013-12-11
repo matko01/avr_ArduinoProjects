@@ -4,11 +4,13 @@
 #include <stdint.h>
 #include "pca.h"
 #include "temperature.h"
+#include "fsm.h"
+#include "lcd.h"
 
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x66
+#define SETTINGS_MAGIC_ID 0x67
 
 
 /**
@@ -24,9 +26,18 @@ struct sys_settings {
 	// 0 - disabled
 	uint8_t lcd_brightness;
 
+	// contrast of the LCD
+	uint8_t lcd_contrast;
+
 	// back-light on time
 	// 0 - always on	
 	uint8_t lcd_bt_time;
+
+	// how long the temp screen will be displayed
+	uint8_t temp_time;
+
+	// how long the time screen will be displayed
+	uint8_t time_time;
 };
 
 
@@ -42,6 +53,9 @@ struct sys_ctx {
 	volatile struct twi_ctx *twi_ctx;
 	volatile struct soft_ow sow_ctx;
 	struct dev_hd44780_ctx lcd_ctx;
+
+	// LED
+	gpio_pin led;
 	
 	// time
 	ds1307_time_t tm;
@@ -55,6 +69,16 @@ struct sys_ctx {
 	// lcd timeout
 	volatile uint16_t lcd_backlight_timer;
 
+	// main state machine
+	struct fsm_ctx fsm;
+
+	// working variables
+	volatile uint8_t _time_trigger;
+	volatile uint8_t _vis_pos;
+	volatile uint8_t _cur_pos;
+
+	// display buffer
+	char display[LCD_NUMBER_OF_LINES][LCD_CHARACTERS_PER_LINE + 1];
 };
 
 #endif /* __SYS_CTX_H__ */

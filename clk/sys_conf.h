@@ -8,7 +8,7 @@
 
 // one wire thermometer setup
 #define OW_PORT PORTB
-#define OW_PIN 0
+#define OW_PIN 4
 
 
 // lcd io lines setup
@@ -19,6 +19,8 @@
 #define LCD_E_PORT PORTB
 #define LCD_E_PIN 2
 
+#define RTC_LED_PIN 5
+#define RTC_LED_PORT PORTB
 
 #endif /* SYS_CONFIG_H_B5FPFCAM */
 
