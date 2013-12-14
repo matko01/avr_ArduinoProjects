@@ -4,6 +4,10 @@
 #include <avr/eeprom.h>
 #include <avr/power.h>
 #include <util/delay.h>
+#include <avr/pgmspace.h>
+
+#include "namedays.h"
+
 
 
 void timers_setup() {
@@ -110,6 +114,7 @@ void sys_settings_get(struct sys_settings *a_ss) {
 
 		a_ss->temp_time = 14;
 		a_ss->time_time = 20;
+		a_ss->nm_time = 10;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
@@ -175,6 +180,25 @@ void displayTemp(volatile struct sys_ctx *a_ctx) {
 
 	// TODO maybe think about some other method 
 	// not to block interrupts so often
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	}
+}
+
+
+void displayNameday(volatile struct sys_ctx *a_ctx) {
+	char tmp[48] = "twojej starej";
+
+	/* strncpy_PF(tmp,  */
+	/* 		pgm_read_word(&g_namedays[5]), */
+	/* 		LCD_CHARACTERS_PER_LINE + 1); */
+
+	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", tmp); 
+
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
 		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);

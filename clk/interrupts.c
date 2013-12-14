@@ -29,10 +29,12 @@ ISR(TIMER0_OVF_vect) {
 		// screen shift animation
 		if (g_sys_ctx._vis_pos > g_sys_ctx._cur_pos) {
 			if (!(g_sys_ctx._cur_pos++%8))
+				// scroll left <--
 				hd44780_write((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
 						HD44780_CMD_CD_SHIFT(1, 0), 0);
 		}
 		else if (g_sys_ctx._vis_pos < g_sys_ctx._cur_pos) {
+			// scroll right -->
 			if (!(g_sys_ctx._cur_pos--%8))
 				hd44780_write((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
 						HD44780_CMD_CD_SHIFT(1, 1), 0);

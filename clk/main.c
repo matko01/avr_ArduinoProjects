@@ -51,21 +51,16 @@ void main(void) {
 	tmp_setup(&g_sys_ctx.temp_ctx, (struct soft_ow *)&g_sys_ctx.sow_ctx);
 	timers_setup();
 
-	// now it's safe to globally enable ints
-	// HW should be up & running
-	sei();
-
 	// restore saved contrast value
 	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
-
-	serial_init(E_BAUD_9600);	
-	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
-	serial_flush();
-	serial_install_stdio();
 
 	// initialize the FSM
 	// initial state = 0 (TIME)	
 	g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
+
+	// now it's safe to globally enable ints
+	// HW should be up & running
+	sei();
 
 	// execution loop
 	for (;;) {
@@ -92,7 +87,7 @@ void main(void) {
 		}
 
 		g_sys_ctx.fsm.cs = 
-		g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
+			g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
 	
 	} // for
 

@@ -5,6 +5,7 @@ SOURCES= \
 		 temperature.c \
 		 fsm.c \
 		 lcd.c \
+		 namedays.c \
 		 main.c
 
 DEPS=

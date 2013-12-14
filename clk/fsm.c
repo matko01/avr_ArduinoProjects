@@ -3,15 +3,18 @@
 #include "sys_common.h"
 #include "sys_ctx.h"
 
-
+/* ================================================================================ */
 
 void fsm_setup_cb(f_state_cb *scb) {
 	scb[E_DISP_TIME] = fsm_state_disp_time;
 	scb[E_DISP_TEMP] = fsm_state_disp_temp;
+	scb[E_DISP_NM] = fsm_state_disp_nm;
 	scb[E_SCROLL_TIME] = fsm_state_scroll_time;
 	scb[E_SCROLL_TEMP] = fsm_state_scroll_temp;
+	scb[E_SCROLL_NM] = fsm_state_scroll_nm;
 }
 
+/* ================================================================================ */
 
 __inline__
 uint8_t fsm_event_available(volatile struct event_queue *eq) {
@@ -40,15 +43,25 @@ uint8_t fsm_event_pop(volatile struct event_queue *eq) {
 	return ev;
 }
 
+/* ================================================================================ */
 
 uint8_t fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
-	uint8_t state;
+	static uint8_t cnt = 0;
+	uint8_t state = E_DISP_TIME;
 	displayTime(a_ctx);
 
 	switch (ev) {
 		case E_EVENT_TO:
-			state = E_SCROLL_TIME;
-			a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			if (!(cnt++%2)) {
+				state = E_SCROLL_NM;
+				a_ctx->fsm.ps = E_DISP_TIME;
+				// this will force scrolling the opposite way
+				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
+			}
+			else {
+				state = E_SCROLL_TIME;
+				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			}
 			break;
 
 		default:
@@ -67,6 +80,7 @@ uint8_t fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	switch (ev) {
 		case E_EVENT_TO:
 			state = E_SCROLL_TEMP;
+			a_ctx->fsm.ps = E_DISP_TEMP;
 			a_ctx->_vis_pos = 0;
 			break;
 
@@ -79,6 +93,27 @@ uint8_t fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
+uint8_t fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+	uint8_t state;
+	displayNameday(a_ctx);
+
+	switch (ev) {
+		case E_EVENT_TO:
+			state = E_SCROLL_NM;
+			a_ctx->fsm.ps = E_DISP_NM;
+			a_ctx->_vis_pos = 0;
+			break;
+
+		default:
+			state = E_DISP_NM;
+			break;
+	}
+
+	return state;
+}
+
+/* ================================================================================ */
+
 uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	uint8_t state;
 	displayTime(a_ctx);
@@ -86,7 +121,8 @@ uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TRANSITION_END:
-			state = E_DISP_TEMP;
+			state = E_DISP_TIME;
+			a_ctx->fsm.ps = E_SCROLL_TIME;
 			a_ctx->_event_timer = a_ctx->settings.temp_time;
 			break;
 
@@ -110,6 +146,7 @@ uint8_t fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 		case E_EVENT_TRANSITION_END:
 			state = E_DISP_TIME;
+			a_ctx->fsm.ps = E_SCROLL_TEMP;
 			a_ctx->_event_timer = a_ctx->settings.time_time;
 			break;
 
@@ -121,3 +158,28 @@ uint8_t fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	return state;
 }
+
+
+uint8_t fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+	uint8_t state;
+	displayTime(a_ctx);
+	displayNameday(a_ctx);
+
+	switch (ev) {
+
+		case E_EVENT_TRANSITION_END:
+			state = (a_ctx->fsm.ps == E_DISP_NM) ? E_DISP_TIME : E_DISP_NM;
+			a_ctx->fsm.ps = E_SCROLL_NM;
+			a_ctx->_event_timer = a_ctx->settings.nm_time;
+			break;
+
+		default:
+		case E_EVENT_TO:
+			state = E_SCROLL_NM;
+			break;
+	}
+
+	return state;
+}
+
+/* ================================================================================ */

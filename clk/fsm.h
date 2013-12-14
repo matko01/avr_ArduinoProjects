@@ -18,8 +18,10 @@ typedef enum _fsm_event_t {
 typedef enum _fsm_state_t {
 	E_DISP_TIME = 0,
 	E_DISP_TEMP,
+	E_DISP_NM,
 	E_SCROLL_TIME,
 	E_SCROLL_TEMP,
+	E_SCROLL_NM,
 	
 	// invalid state
 	E_INVALID
@@ -41,6 +43,8 @@ typedef uint8_t (*f_state_cb)(volatile struct sys_ctx*, uint8_t);
 struct fsm_t {
 	// current state
 	uint8_t cs; 
+	// previous state
+	uint8_t ps;
 };
 
 
@@ -53,8 +57,10 @@ uint8_t fsm_event_pop(volatile struct event_queue *eq);
 // state functions
 uint8_t fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev);
+uint8_t fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev);
+uint8_t fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev);
 
 
 #endif /* FSM_H_RWRTTM0S */

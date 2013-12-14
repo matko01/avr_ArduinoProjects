@@ -10,7 +10,7 @@
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x02
+#define SETTINGS_MAGIC_ID 0x04
 
 
 /**
@@ -38,6 +38,8 @@ struct sys_settings {
 
 	// how long the time screen will be displayed
 	uint8_t time_time;
+
+	uint8_t nm_time;
 };
 
 
