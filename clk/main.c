@@ -17,9 +17,6 @@
  */
 volatile struct sys_ctx g_sys_ctx;
 
-struct g_fsm_st[] = {
-	{  }
-};
 
 void main(void) {
 
@@ -28,6 +25,9 @@ void main(void) {
 	// initialize the global context
 	common_zero_mem(&g_sys_ctx, size);
 	SET_CONTRAST(0x00);
+
+	// setup state machine
+	fsm_setup_cb((f_state_cb *)g_sys_ctx.state_cb);
 	
 	// get system settings from eeprom
 	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
@@ -58,8 +58,21 @@ void main(void) {
 	// restore saved contrast value
 	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
 
+	serial_init(E_BAUD_9600);	
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
+	serial_flush();
+	serial_install_stdio();
+
+	// initialize the FSM
+	// initial state = 0 (TIME)	
+	g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
+
 	// execution loop
 	for (;;) {
+		// pop an event
+		uint8_t event = fsm_event_pop(&g_sys_ctx.eq);
+
+		// perform temperature measurement
 		tmp_update_measurements(&g_sys_ctx.temp_ctx,
 				&g_sys_ctx.sow_ctx);
 
@@ -78,21 +91,9 @@ void main(void) {
 			g_sys_ctx._time_trigger = 0;
 		}
 
-		switch(g_sys_ctx.state) {
-
-			case E_STATE_TEMPERATURE:
-				displayTemp(&g_sys_ctx);
-				break;
-
-			case E_STATE_MENU:
-				break;
-
-			default:
-			case E_STATE_TIME:
-			case E_STATE_LAST:
-				displayTime(&g_sys_ctx);
-				break;
-		} // switch
+		g_sys_ctx.fsm.cs = 
+		g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
+	
 	} // for
 
 } // main

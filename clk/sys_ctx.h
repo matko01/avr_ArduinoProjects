@@ -10,7 +10,7 @@
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x67
+#define SETTINGS_MAGIC_ID 0x02
 
 
 /**
@@ -70,10 +70,13 @@ struct sys_ctx {
 	volatile uint16_t lcd_backlight_timer;
 
 	// main state machine
-	struct fsm_ctx fsm;
+	struct fsm_t fsm;
+	struct event_queue eq;
+	f_state_cb state_cb[E_INVALID];
 
 	// working variables
 	volatile uint8_t _time_trigger;
+	volatile uint8_t _event_timer;
 	volatile uint8_t _vis_pos;
 	volatile uint8_t _cur_pos;
 

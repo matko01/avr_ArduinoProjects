@@ -62,7 +62,13 @@ void rtc_setup(volatile struct twi_ctx *a_ctx) {
 		len = sizeof(data);
 		common_zero_mem(data,len);
 
+		// TODO temporary changed, should be 0x80 - HALTED
 		data[1] = 0x10; // clock halted
+
+		data[1 + DS1307_DOW_ADDR] = 1;
+		data[1 + DS1307_DOM_ADDR] = 1;
+		data[1 + DS1307_MONTHS_ADDR] = 1;
+
 		data[DS1307_CONTROL_ADDR + 1] = 0x10;
 		twi_mtx(TWI_RTC_ADDR, data, sizeof(data), E_TWI_BIT_SEND_STOP);
 		while (a_ctx->status & E_TWI_BIT_BUSY);
@@ -101,6 +107,9 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		a_ss->lcd_brightness = 0xff;
 		a_ss->lcd_contrast = 0xff;
 		a_ss->lcd_bt_time = 0;
+
+		a_ss->temp_time = 14;
+		a_ss->time_time = 20;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
@@ -145,26 +154,31 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 			a_ctx->tm.dom,
 			weekdays[x]); 
 
-	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE00_ADDR);
-	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-	
-	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE10_ADDR);
-	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	// TODO maybe think about some other method 
+	// not to block interrupts so often
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE00_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE10_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	}
 }
-
 
 
 void displayTemp(volatile struct sys_ctx *a_ctx) {
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Current: %2.02f\xdf%c",
 			((float)a_ctx->temp_ctx.temp)/16, 'C'); 
 
-	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
-	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-	
 	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "-/+ %2.02f %2.02f ",
 			((float)a_ctx->temp_ctx.temp_min)/16,
 			((float)a_ctx->temp_ctx.temp_max)/16); 
 
-	hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
-	hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	// TODO maybe think about some other method 
+	// not to block interrupts so often
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	}
 }
