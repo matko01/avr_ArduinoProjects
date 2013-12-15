@@ -45,6 +45,10 @@ ISR(TIMER0_OVF_vect) {
 			fsm_event_push(&g_sys_ctx.eq, E_EVENT_TRANSITION_END);
 		}
 	}
+
+	// fast counter increment
+	// will overflow every ~16.5 minutes
+	g_sys_ctx._fast_counter++;
 }
 
 

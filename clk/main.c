@@ -62,6 +62,11 @@ void main(void) {
 	// HW should be up & running
 	sei();
 
+	serial_init(E_BAUD_9600);	
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
+	serial_flush();
+	serial_install_stdio();
+
 	// execution loop
 	for (;;) {
 		// pop an event

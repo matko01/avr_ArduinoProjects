@@ -1,13 +1,13 @@
 #include "sys_common.h"
 #include "sys_conf.h"
+#include "namedays.h"
+#include "scroll_string.h"
 
 #include <avr/eeprom.h>
 #include <avr/power.h>
 #include <util/delay.h>
 #include <avr/pgmspace.h>
-
-#include "namedays.h"
-
+#include <string.h>
 
 
 void timers_setup() {
@@ -77,7 +77,6 @@ void rtc_setup(volatile struct twi_ctx *a_ctx) {
 		twi_mtx(TWI_RTC_ADDR, data, sizeof(data), E_TWI_BIT_SEND_STOP);
 		while (a_ctx->status & E_TWI_BIT_BUSY);
 	}
-
 }
 
 
@@ -112,9 +111,13 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		a_ss->lcd_contrast = 0xff;
 		a_ss->lcd_bt_time = 0;
 
-		a_ss->temp_time = 14;
-		a_ss->time_time = 20;
-		a_ss->nm_time = 10;
+		/* a_ss->temp_time = 14; */
+		/* a_ss->time_time = 20; */
+		/* a_ss->nm_time = 10; */
+
+		a_ss->temp_time = 4;
+		a_ss->time_time = 4;
+		a_ss->nm_time = 60;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
@@ -189,15 +192,56 @@ void displayTemp(volatile struct sys_ctx *a_ctx) {
 }
 
 
-void displayNameday(volatile struct sys_ctx *a_ctx) {
-	char tmp[48] = "twojej starej";
+uint8_t is_leap_year(uint8_t a_year) {
+	uint16_t y = a_year + 2000;
+	return ((y%4 == 0 && y%100 != 0) || y%400 == 0);
+}
 
-	/* strncpy_PF(tmp,  */
-	/* 		pgm_read_word(&g_namedays[5]), */
-	/* 		LCD_CHARACTERS_PER_LINE + 1); */
+
+uint16_t get_year_day(volatile struct sys_ctx *a_ctx) {
+	uint16_t day = 0;
+	uint8_t mon[] = {
+		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
+	};
+
+	for (int8_t i = (a_ctx->tm.month - 1); i>0; i--) {
+		day += mon[i - 1];
+	}
+
+	day += a_ctx->tm.dom;
+	return day;
+}
+
+
+void displayNameday(volatile struct sys_ctx *a_ctx) {
+	char ss_mem[40] = "";
+	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
+	static struct scroll_str str = {0x00};
+	uint16_t yd = get_year_day(a_ctx) - 1;
+	uint8_t len = strlen(ss_mem);
+
+	// zero the scrl_string & the output
+	common_zero_mem(ss_mem, len);
+	len = LCD_CHARACTERS_PER_LINE + 1;
+	common_zero_mem(output, len);
+
+	if (!str.s) {
+		scroll_str_init(&str, ss_mem, 0);
+	}
+
+	// TODO handling the leap year
+
+	// copy data from FLASH
+	strcpy_PF(ss_mem, pgm_read_word(&g_namedays[yd]));
+
+	// length of the original string
+	str.len = strlen(ss_mem);
+
+	// get a string slice
+	scroll_str_paste(&str, output, sizeof(output), a_ctx->_fast_counter);
 
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", tmp); 
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
@@ -206,3 +250,5 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
 	}
 }
+
+

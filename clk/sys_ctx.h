@@ -10,7 +10,7 @@
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x04
+#define SETTINGS_MAGIC_ID 0x05
 
 
 /**
@@ -40,12 +40,6 @@ struct sys_settings {
 	uint8_t time_time;
 
 	uint8_t nm_time;
-};
-
-
-struct scroll_string {
-	char s[64];
-	uint8_t pos;
 };
 
 
@@ -82,10 +76,28 @@ struct sys_ctx {
 	struct event_queue eq;
 	f_state_cb state_cb[E_INVALID];
 
-	// working variables
+	// ---- work variables bellow ---- 
+
+	// this one is triggered every second to
+	// inhibit update of the displayed time
 	volatile uint8_t _time_trigger;
+
+	// this is a rolling low-precision counter
+	// incremented by the hardware timer every ~16 ms
+	// used for text scrolling and animations
+	volatile uint16_t _fast_counter;
+
+	// event timer is set by various routines
+	// and decrement every second
+	// when reaches 0 an EVENT_TO will be queued
 	volatile uint8_t _event_timer;
+
+	// visible position defines the screen offset
+	// currently displayed (0 or 17 most of the times)
 	volatile uint8_t _vis_pos;
+
+	// current position is used during the transition
+	// to define the screen frame position
 	volatile uint8_t _cur_pos;
 
 	// display buffer
