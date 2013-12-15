@@ -54,14 +54,14 @@ uint8_t fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 		case E_EVENT_TO:
 			if (!(cnt++%2)) {
 				state = E_SCROLL_NM;
-				a_ctx->fsm.ps = E_DISP_TIME;
-				// this will force scrolling the opposite way
+				// TODO work out how to force scrolling the opposite way
 				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
 			}
 			else {
 				state = E_SCROLL_TIME;
 				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
 			}
+			a_ctx->fsm.ps = E_DISP_TIME;
 			break;
 
 		default:
@@ -121,7 +121,7 @@ uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TRANSITION_END:
-			state = E_DISP_TIME;
+			state = E_DISP_TEMP;
 			a_ctx->fsm.ps = E_SCROLL_TIME;
 			a_ctx->_event_timer = a_ctx->settings.temp_time;
 			break;
@@ -168,9 +168,15 @@ uint8_t fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	switch (ev) {
 
 		case E_EVENT_TRANSITION_END:
-			state = (a_ctx->fsm.ps == E_DISP_NM) ? E_DISP_TIME : E_DISP_NM;
+			if (a_ctx->fsm.ps == E_DISP_NM) {
+				state = E_DISP_TIME;
+				a_ctx->_event_timer = a_ctx->settings.time_time;
+			}
+			else {
+				state = E_DISP_NM;
+				a_ctx->_event_timer = a_ctx->settings.nm_time;
+			}
 			a_ctx->fsm.ps = E_SCROLL_NM;
-			a_ctx->_event_timer = a_ctx->settings.nm_time;
 			break;
 
 		default:

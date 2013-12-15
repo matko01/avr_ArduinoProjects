@@ -43,6 +43,12 @@ struct sys_settings {
 };
 
 
+struct scroll_string {
+	char s[64];
+	uint8_t pos;
+};
+
+
 /**
  * @brief system context
  *
