@@ -115,9 +115,9 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		/* a_ss->time_time = 20; */
 		/* a_ss->nm_time = 10; */
 
-		a_ss->temp_time = 4;
-		a_ss->time_time = 4;
-		a_ss->nm_time = 60;
+		a_ss->temp_time = 10;
+		a_ss->time_time = 10;
+		a_ss->nm_time = 10;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
@@ -145,10 +145,10 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 
 	// first time initialization
 	if (!str.s) {
-		scroll_str_init(&str, weekdays[x], 0);
+		scroll_str_init(&str, (char *)weekdays[x], 0);
 	}
 
-	str.s = weekdays[x];
+	str.s = (char *)weekdays[x];
 	str.len = strlen(weekdays[x]);
 
 	// get a string slice
@@ -251,7 +251,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 
 	// make an index correction for non leap years
 	// since the FLASH table includes the leap year name-day as well
-	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) // first of march
+	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) { // first of march
 		// increment the index to ommit the leap year extra day
 		yd++;		
 	}
