@@ -128,15 +128,31 @@ void sys_settings_get(struct sys_settings *a_ss) {
 void displayTime(volatile struct sys_ctx *a_ctx) {
 
 	const char *weekdays[] = {
-		"Mon",
-		"Tue",
-		"Wed",
-		"Thu",
-		"Fri",
-		"Sat",
-		"Sun"
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+		"Sunday"
 	};
 	uint8_t x = a_ctx->tm.dow ? a_ctx->tm.dow - 1 : 0x00;
+	char output[5] = {0x00};
+	uint8_t len = sizeof(output);
+	static struct scroll_str str = {0x00};
+
+	common_zero_mem(output, len);
+
+	// first time initialization
+	if (!str.s) {
+		scroll_str_init(&str, weekdays[x], 0);
+	}
+
+	str.s = weekdays[x];
+	str.len = strlen(weekdays[x]);
+
+	// get a string slice
+	scroll_str_paste(&str, output, sizeof(output), a_ctx->_fast_counter);
 
 	if (a_ctx->tm.mode_ampm_hour & 0x40) {
 		// 12 hour mode
@@ -156,11 +172,11 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 	}
 
 	snprintf((char *)a_ctx->display[1], 
-			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x [%s]",
+			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x, %4s",
 			BCD2BIN(a_ctx->tm.year) + 2000,
 			a_ctx->tm.month,
 			a_ctx->tm.dom,
-			weekdays[x]); 
+			output); 
 
 	// TODO maybe think about some other method 
 	// not to block interrupts so often
@@ -222,7 +238,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
 	static struct scroll_str str = {0x00};
 	uint16_t yd = get_year_day(a_ctx) - 1;
-	uint8_t len = strlen(ss_mem);
+	uint8_t len = sizeof(ss_mem);
 
 	// zero the scrl_string & the output
 	common_zero_mem(ss_mem, len);
