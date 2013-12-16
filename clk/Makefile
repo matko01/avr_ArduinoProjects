@@ -7,6 +7,7 @@ SOURCES= \
 		 fsm.c \
 		 lcd.c \
 		 namedays.c \
+		 proverb.c \
 		 main.c
 
 DEPS=
