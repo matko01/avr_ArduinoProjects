@@ -204,6 +204,10 @@ uint16_t get_year_day(volatile struct sys_ctx *a_ctx) {
 		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 	};
 
+	if (is_leap_year(a_ctx->tm.year)) {
+		mon[1] = 29;
+	}
+
 	for (int8_t i = (a_ctx->tm.month - 1); i>0; i--) {
 		day += mon[i - 1];
 	}
@@ -229,7 +233,12 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 		scroll_str_init(&str, ss_mem, 0);
 	}
 
-	// TODO handling the leap year
+	// make an index correction for non leap years
+	// since the FLASH table includes the leap year name-day as well
+	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) // first of march
+		// increment the index to ommit the leap year extra day
+		yd++;		
+	}
 
 	// copy data from FLASH
 	strcpy_PF(ss_mem, pgm_read_word(&g_namedays[yd]));
@@ -241,7 +250,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	scroll_str_paste(&str, output, sizeof(output), a_ctx->_fast_counter);
 
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%16s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
