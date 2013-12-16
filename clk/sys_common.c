@@ -115,9 +115,9 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		/* a_ss->time_time = 20; */
 		/* a_ss->nm_time = 10; */
 
-		a_ss->temp_time = 4;
-		a_ss->time_time = 4;
-		a_ss->nm_time = 60;
+		a_ss->temp_time = 8;
+		a_ss->time_time = 8;
+		a_ss->nm_time = 10;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
