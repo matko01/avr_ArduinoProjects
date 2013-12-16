@@ -73,7 +73,6 @@ ISR(INT0_vect) {
 	if (g_sys_ctx.settings.lcd_bt_time) 
 		g_sys_ctx.settings.lcd_bt_time--;
 
-
 	if (g_sys_ctx._event_timer) {
 		if (!--g_sys_ctx._event_timer) {
 			fsm_event_push(&g_sys_ctx.eq, E_EVENT_TO);

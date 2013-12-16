@@ -36,6 +36,9 @@ void timers_setup() {
 	OCR2A = 0x00;
 	DDRB |= _BV(PORTB3);
 	DDRD |= _BV(PORTD3);
+
+	DDRC &= 0xf0; // configure first PORTC ports as inputs
+	PORTC |= 0x0f; // enable pull-ups 
 }
 
 
@@ -115,8 +118,8 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		/* a_ss->time_time = 20; */
 		/* a_ss->nm_time = 10; */
 
-		a_ss->temp_time = 8;
-		a_ss->time_time = 8;
+		a_ss->temp_time = 10;
+		a_ss->time_time = 10;
 		a_ss->nm_time = 10;
 
 		// initialize
@@ -128,15 +131,28 @@ void sys_settings_get(struct sys_settings *a_ss) {
 void displayTime(volatile struct sys_ctx *a_ctx) {
 
 	const char *weekdays[] = {
-		"Mon",
-		"Tue",
-		"Wed",
-		"Thu",
-		"Fri",
-		"Sat",
-		"Sun"
+		"Monday",
+		"Tuesday",
+		"Wednesday",
+		"Thursday",
+		"Friday",
+		"Saturday",
+		"Sunday"
 	};
 	uint8_t x = a_ctx->tm.dow ? a_ctx->tm.dow - 1 : 0x00;
+	char output[5] = {0x00};
+	uint8_t len = sizeof(output);
+	static struct scroll_str str = {0x00};
+
+	common_zero_mem(output, len);
+
+	// zero the position if day has changed
+	if (str.s != weekdays[x]) str.pos = 0;	
+	str.s = (char *)weekdays[x];
+	str.len = strlen(weekdays[x]);
+
+	// get a string slice
+	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
 
 	if (a_ctx->tm.mode_ampm_hour & 0x40) {
 		// 12 hour mode
@@ -156,11 +172,11 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 	}
 
 	snprintf((char *)a_ctx->display[1], 
-			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x [%s]",
+			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x, %4s",
 			BCD2BIN(a_ctx->tm.year) + 2000,
 			a_ctx->tm.month,
 			a_ctx->tm.dom,
-			weekdays[x]); 
+			output); 
 
 	// TODO maybe think about some other method 
 	// not to block interrupts so often
@@ -222,12 +238,6 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
 	static struct scroll_str str = {0x00};
 	uint16_t yd = get_year_day(a_ctx) - 1;
-	uint8_t len = strlen(ss_mem);
-
-	// zero the scrl_string & the output
-	common_zero_mem(ss_mem, len);
-	len = LCD_CHARACTERS_PER_LINE + 1;
-	common_zero_mem(output, len);
 
 	if (!str.s) {
 		scroll_str_init(&str, ss_mem, 0);
@@ -235,7 +245,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 
 	// make an index correction for non leap years
 	// since the FLASH table includes the leap year name-day as well
-	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) // first of march
+	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) { // first of march
 		// increment the index to ommit the leap year extra day
 		yd++;		
 	}
@@ -243,14 +253,16 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	// copy data from FLASH
 	strcpy_PF(ss_mem, pgm_read_word(&g_namedays[yd]));
 
+
+
 	// length of the original string
 	str.len = strlen(ss_mem);
 
 	// get a string slice
-	scroll_str_paste(&str, output, sizeof(output), a_ctx->_fast_counter);
+	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
 
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%16s", output); 
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
