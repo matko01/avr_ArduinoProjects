@@ -93,10 +93,25 @@ void main(void) {
 
 		g_sys_ctx.fsm.cs = 
 			g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
-	
-		// poll every 1 ms (or even longer
+
+		switch(g_sys_ctx.buttons) {
+			case 0x01: // menu
+				break;
+
+			case 0x02: // minus
+				break;
+
+			case 0x04: // plus
+				break;
+
+			case 0x08: // ok
+				fsm_event_push(&g_sys_ctx.eq, E_EVENT_BUTTON_OK);
+				break;
+		} // switch
+
+		// poll every 10 ms (or even longer
 		// when considering the processing time)
-		_delay_ms(1);
+		_delay_ms(10);
 	} // for
 
 } // main

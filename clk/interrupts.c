@@ -61,7 +61,7 @@ ISR(TIMER0_OVF_vect) {
 	// button debounsing procedure
 	for (volatile uint8_t i = 0; i<E_BUTTON_LAST; i++) {
 		// button pressed - bit is zero
-		if (!(PORTC & _BV(i))) {
+		if (!(PINC & _BV(i))) {
 			if (gs_btn_integration[i]) gs_btn_integration[i]--;
 		}
 		else if (gs_btn_integration[i] < DEBOUNCE_MAXIMUM_PERIOD) {
@@ -73,7 +73,7 @@ ISR(TIMER0_OVF_vect) {
 		if (gs_btn_integration[i] >= DEBOUNCE_MAXIMUM_PERIOD) {
 			g_sys_ctx.buttons &= ~_BV(i);
 		}
-		else {
+		else if (gs_btn_integration[i]) {
 			g_sys_ctx.buttons |= _BV(i);
 		}
 	} // for

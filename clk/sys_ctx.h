@@ -10,7 +10,7 @@
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x0b
+#define SETTINGS_MAGIC_ID 0x0c
 
 
 /**

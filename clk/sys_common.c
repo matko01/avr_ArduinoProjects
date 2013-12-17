@@ -296,7 +296,7 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 	// get a string slice
 	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
 
-	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom");
+	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom:");
 	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {

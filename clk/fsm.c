@@ -10,10 +10,11 @@ void fsm_setup_cb(f_state_cb *scb) {
 	scb[E_DISP_TEMP] = fsm_state_disp_temp;
 	scb[E_DISP_NM] = fsm_state_disp_nm;
 	scb[E_DISP_PV] = fsm_state_disp_pv;
+	scb[E_DISP_MENU] = fsm_state_disp_menu;
 	scb[E_SCROLL_TIME] = fsm_state_scroll_time;
 	scb[E_SCROLL_TEMP] = fsm_state_scroll_temp;
 	scb[E_SCROLL_NM] = fsm_state_scroll_nm;
-	scb[E_SCROLL_PV] = fsm_state_scroll_pv;
+	scb[E_SCROLL_MENU] = fsm_state_scroll_menu;
 }
 
 /* ================================================================================ */
@@ -54,8 +55,14 @@ uint8_t fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TO:
+		case E_EVENT_BUTTON_OK:
 			if (!(cnt++%2)) {
 				state = E_SCROLL_NM;
+				// TODO work out how to force scrolling the opposite way
+				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
+			}
+			else if (!(cnt%3)) {
+				state = E_SCROLL_PV;
 				// TODO work out how to force scrolling the opposite way
 				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
 			}
@@ -81,6 +88,7 @@ uint8_t fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TO:
+		case E_EVENT_BUTTON_OK:
 			state = E_SCROLL_TEMP;
 			a_ctx->fsm.ps = E_DISP_TEMP;
 			a_ctx->_vis_pos = 0;
@@ -101,6 +109,7 @@ uint8_t fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TO:
+		case E_EVENT_BUTTON_OK:
 			state = E_SCROLL_NM;
 			a_ctx->fsm.ps = E_DISP_NM;
 			a_ctx->_vis_pos = 0;
@@ -121,6 +130,7 @@ uint8_t fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	switch (ev) {
 		case E_EVENT_TO:
+		case E_EVENT_BUTTON_OK:
 			state = E_SCROLL_PV;
 			a_ctx->fsm.ps = E_DISP_PV;
 			a_ctx->_vis_pos = 0;
@@ -132,6 +142,10 @@ uint8_t fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	}
 
 	return state;
+}
+
+
+uint8_t fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
@@ -239,6 +253,10 @@ uint8_t fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 	return state;
 
+}
+
+
+uint8_t fsm_state_scroll_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 /* ================================================================================ */

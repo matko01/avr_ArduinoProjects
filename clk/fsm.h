@@ -9,6 +9,10 @@
 typedef enum _fsm_event_t {
 	E_EVENT_TO = 0,
 	E_EVENT_TRANSITION_END,
+	E_EVENT_BUTTON_MENU,
+	E_EVENT_BUTTON_MINUS,
+	E_EVENT_BUTTON_PLUS,
+	E_EVENT_BUTTON_OK,
 
 	// no event
 	E_EVENT_NONE
@@ -20,10 +24,12 @@ typedef enum _fsm_state_t {
 	E_DISP_TEMP,
 	E_DISP_NM,
 	E_DISP_PV,
+	E_DISP_MENU,
 	E_SCROLL_TIME,
 	E_SCROLL_TEMP,
 	E_SCROLL_NM,
 	E_SCROLL_PV,
+	E_SCROLL_MENU,
 	
 	// invalid state
 	E_INVALID
@@ -61,12 +67,13 @@ uint8_t fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev);
+uint8_t fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev);
 
 uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev);
 uint8_t fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev);
-
+uint8_t fsm_state_scroll_menu(volatile struct sys_ctx *a_ctx, uint8_t ev);
 
 #endif /* FSM_H_RWRTTM0S */
 
