@@ -39,7 +39,24 @@ struct sys_settings {
 	// how long the time screen will be displayed
 	uint8_t time_time;
 
+	// how long the name-day screen will be displayed
 	uint8_t nm_time;
+
+	// how long the proverb screen will be displayed
+	uint8_t pv_time;
+};
+
+
+/**
+ * @brief buttons enumeration
+ */
+enum e_buttons {
+	E_MENU = 0,
+	E_MINUS,
+	E_PLUS,
+	E_OK,
+
+	E_BUTTON_LAST
 };
 
 
@@ -70,6 +87,9 @@ struct sys_ctx {
 
 	// lcd timeout
 	volatile uint16_t lcd_backlight_timer;
+
+	// each bit represents the button state
+	volatile uint8_t buttons;
 
 	// main state machine
 	struct fsm_t fsm;

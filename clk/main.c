@@ -94,6 +94,9 @@ void main(void) {
 		g_sys_ctx.fsm.cs = 
 			g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
 	
+		// poll every 1 ms (or even longer
+		// when considering the processing time)
+		_delay_ms(1);
 	} // for
 
 } // main

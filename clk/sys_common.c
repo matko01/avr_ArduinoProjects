@@ -1,6 +1,7 @@
 #include "sys_common.h"
 #include "sys_conf.h"
 #include "namedays.h"
+#include "proverb.h"
 #include "scroll_string.h"
 
 #include <avr/eeprom.h>
@@ -27,6 +28,7 @@ void timers_setup() {
 	TIMSK0 = 0x01;
 
 	// enable external int0 (pd2) on falling edge
+	// RTC 1 HZ output
 	EICRA = 0x02;
 	EIMSK = 0x01;
 	PORTD &= ~_BV(PORTD2);
@@ -121,6 +123,7 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		a_ss->temp_time = 10;
 		a_ss->time_time = 10;
 		a_ss->nm_time = 10;
+		a_ss->pv_time = 30;
 
 		// initialize
 		eeprom_write_block(a_ss, (void *)0x00, sizeof(struct sys_settings));
@@ -253,8 +256,6 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	// copy data from FLASH
 	strcpy_PF(ss_mem, pgm_read_word(&g_namedays[yd]));
 
-
-
 	// length of the original string
 	str.len = strlen(ss_mem);
 
@@ -273,3 +274,36 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 }
 
 
+void displayProverb(volatile struct sys_ctx *a_ctx) {
+	char ss_mem[128] = "";
+	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
+	static struct scroll_str str = {0x00};
+	uint16_t yd = get_year_day(a_ctx) - 1;
+
+	if (!str.s) {
+		scroll_str_init(&str, ss_mem, 0);
+	}
+
+	// wrap around since wo don't have enough for every year day
+	yd = yd % PROVERBS_AVAILABLE;
+
+	// copy data from FLASH
+	strcpy_PF(ss_mem, pgm_read_word(&g_proverbs[yd]));
+
+	// length of the original string
+	str.len = strlen(ss_mem);
+
+	// get a string slice
+	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
+
+	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom");
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
+
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	}
+
+}

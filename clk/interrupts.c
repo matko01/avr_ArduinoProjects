@@ -4,6 +4,7 @@
 #include "sys_ctx.h"
 #include "fsm.h"
 
+static volatile uint8_t gs_buttons_tmp = 0x00;
 
 /**
  * @brief timer 0 overflow interrupt handler
@@ -11,6 +12,7 @@
  * @param TIMER0_OVF_vect
  */
 ISR(TIMER0_OVF_vect) {
+
 	// handle temperature measurements
 	tmp_update_tv(&g_sys_ctx.temp_ctx);
 
@@ -49,6 +51,15 @@ ISR(TIMER0_OVF_vect) {
 	// fast counter increment
 	// will overflow every ~16.5 minutes
 	g_sys_ctx._fast_counter++;
+
+	// naive debouncing method
+	if (g_sys_ctx._fast_counter & 0x01) {
+		// first probe
+		gs_buttons_tmp = ~(PORTC & 0x0f);
+	}
+	else {
+		g_sys_ctx.buttons = ((PORTC & 0x0f) ^ gs_buttons_tmp);
+	}
 }
 
 

@@ -9,9 +9,11 @@ void fsm_setup_cb(f_state_cb *scb) {
 	scb[E_DISP_TIME] = fsm_state_disp_time;
 	scb[E_DISP_TEMP] = fsm_state_disp_temp;
 	scb[E_DISP_NM] = fsm_state_disp_nm;
+	scb[E_DISP_PV] = fsm_state_disp_pv;
 	scb[E_SCROLL_TIME] = fsm_state_scroll_time;
 	scb[E_SCROLL_TEMP] = fsm_state_scroll_temp;
 	scb[E_SCROLL_NM] = fsm_state_scroll_nm;
+	scb[E_SCROLL_PV] = fsm_state_scroll_pv;
 }
 
 /* ================================================================================ */
@@ -112,6 +114,27 @@ uint8_t fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	return state;
 }
 
+
+uint8_t fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+	uint8_t state;
+	displayProverb(a_ctx);
+
+	switch (ev) {
+		case E_EVENT_TO:
+			state = E_SCROLL_PV;
+			a_ctx->fsm.ps = E_DISP_PV;
+			a_ctx->_vis_pos = 0;
+			break;
+
+		default:
+			state = E_DISP_PV;
+			break;
+	}
+
+	return state;
+}
+
+
 /* ================================================================================ */
 
 uint8_t fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
@@ -186,6 +209,36 @@ uint8_t fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	}
 
 	return state;
+}
+
+
+uint8_t fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+	uint8_t state;
+	displayTime(a_ctx);
+	displayProverb(a_ctx);
+
+	switch (ev) {
+
+		case E_EVENT_TRANSITION_END:
+			if (a_ctx->fsm.ps == E_DISP_PV) {
+				state = E_DISP_TIME;
+				a_ctx->_event_timer = a_ctx->settings.time_time;
+			}
+			else {
+				state = E_DISP_PV;
+				a_ctx->_event_timer = a_ctx->settings.pv_time;
+			}
+			a_ctx->fsm.ps = E_SCROLL_PV;
+			break;
+
+		default:
+		case E_EVENT_TO:
+			state = E_SCROLL_PV;
+			break;
+	}
+
+	return state;
+
 }
 
 /* ================================================================================ */
