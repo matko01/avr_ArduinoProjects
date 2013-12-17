@@ -18,6 +18,12 @@
 volatile struct sys_ctx g_sys_ctx;
 
 
+/**
+ * @brief menu definition
+ */
+extern struct menu main_menu;
+
+
 void main(void) {
 
 	uint8_t size = sizeof(struct sys_ctx);
@@ -25,6 +31,8 @@ void main(void) {
 	// initialize the global context
 	common_zero_mem(&g_sys_ctx, size);
 	SET_CONTRAST(0x00);
+
+	g_sys_ctx.menu = &main_menu;
 
 	// setup state machine
 	fsm_setup_cb((f_state_cb *)g_sys_ctx.state_cb);

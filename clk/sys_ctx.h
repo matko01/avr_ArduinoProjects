@@ -6,6 +6,8 @@
 #include "temperature.h"
 #include "fsm.h"
 #include "lcd.h"
+#include "menu.h"
+
 
 /**
  * @brief default magic identifier value
@@ -90,6 +92,8 @@ struct sys_ctx {
 
 	// each bit represents the button state
 	volatile uint8_t buttons;
+
+	struct menu *menu;
 
 	// main state machine
 	struct fsm_t fsm;

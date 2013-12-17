@@ -8,6 +8,7 @@ SOURCES= \
 		 lcd.c \
 		 namedays.c \
 		 proverb.c \
+		 menu.c \
 		 main.c
 
 DEPS=
