@@ -4,7 +4,13 @@
 #include "sys_ctx.h"
 #include "fsm.h"
 
-static volatile uint8_t gs_buttons_tmp = 0x00;
+// integrated value of the buttons pressed
+static volatile uint8_t gs_btn_integration[E_BUTTON_LAST] = {0x00};
+
+#define DEBOUNCE_TIME 0.065
+#define DEBOUNCE_SAMPLING_FREQUENCY 61
+#define DEBOUNCE_MAXIMUM_PERIOD (DEBOUNCE_TIME * DEBOUNCE_SAMPLING_FREQUENCY)
+
 
 /**
  * @brief timer 0 overflow interrupt handler
@@ -52,14 +58,25 @@ ISR(TIMER0_OVF_vect) {
 	// will overflow every ~16.5 minutes
 	g_sys_ctx._fast_counter++;
 
-	// naive debouncing method
-	if (g_sys_ctx._fast_counter & 0x01) {
-		// first probe
-		gs_buttons_tmp = ~(PORTC & 0x0f);
-	}
-	else {
-		g_sys_ctx.buttons = ((PORTC & 0x0f) ^ gs_buttons_tmp);
-	}
+	// button debounsing procedure
+	for (volatile uint8_t i = 0; i<E_BUTTON_LAST; i++) {
+		// button pressed - bit is zero
+		if (!(PORTC & _BV(i))) {
+			if (gs_btn_integration[i]) gs_btn_integration[i]--;
+		}
+		else if (gs_btn_integration[i] < DEBOUNCE_MAXIMUM_PERIOD) {
+			// button released
+			gs_btn_integration[i]++;
+		}
+
+		// the logic here is inverted since low state means button pressed
+		if (gs_btn_integration[i] >= DEBOUNCE_MAXIMUM_PERIOD) {
+			g_sys_ctx.buttons &= ~_BV(i);
+		}
+		else {
+			g_sys_ctx.buttons |= _BV(i);
+		}
+	} // for
 }
 
 
