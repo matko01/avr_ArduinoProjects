@@ -37,6 +37,22 @@ struct menu g_main_menu = {
 };
 
 
+void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint8_t a_max, uint8_t a_cur) {
+	uint8_t range = a_max - a_min;
+	uint8_t pos = a_cur - a_min;
+	uint8_t progress = (uint8_t)(((float)pos/range)*a_len);
+
+	if (a_len>3) {
+		*a_buffer = '[';
+		a_buffer[a_len - 1] = ']';
+	}
+
+	for (uint8_t i = 1; i<a_len-1; i++) {
+		a_buffer[i] = i<progress ? '-' : ' ';
+	}
+}
+
+
 void menu_render(struct menu *a_menu, uint8_t a_elem, char *a_buffer, uint8_t a_linelen) {
 /* 	sprintf(a_buffer, "%c%.*s", */
 /* 			!a_elem ? '>' : ' ', */
