@@ -102,20 +102,10 @@ void main(void) {
 		// execute the state machine
 		g_sys_ctx.fsm.cs = g_sys_ctx.fsm.cs.cb(&g_sys_ctx, event);
 
-		switch(g_sys_ctx.buttons) {
-			case 0x01: // menu
-				break;
-
-			case 0x02: // minus
-				break;
-
-			case 0x04: // plus
-				break;
-
-			case 0x08: // ok
-				fsm_event_push(&g_sys_ctx.eq, E_EVENT_BUTTON_OK);
-				break;
-		} // switch
+		// if button pressed
+		if (g_sys_ctx.buttons) {
+			fsm_event_push(&g_sys_ctx.eq, 0x10 + g_sys_ctx.buttons);
+		}
 
 		// poll every 10 ms (or even longer
 		// when considering the processing time)

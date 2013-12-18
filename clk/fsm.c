@@ -53,19 +53,21 @@ f_state fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 		case E_EVENT_BUTTON_OK:
 			if (!(cnt++%2)) {
 				state.cb = fsm_state_scroll_nm;
-				// TODO work out how to force scrolling the opposite way
-				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
 			}
 			else if (!(cnt%3)) {
 				state.cb = fsm_state_scroll_pv;
-				// TODO work out how to force scrolling the opposite way
-				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8 ;
 			}
 			else {
 				// scroll to temp
 				state.cb = fsm_state_scroll_time;
-				a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
 			}
+			a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			a_ctx->fsm.ps.cb = fsm_state_disp_time;
+			break;			
+
+		case E_EVENT_BUTTON_MENU:
+			state.cb = fsm_state_scroll_menu;
+			a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
 			a_ctx->fsm.ps.cb = fsm_state_disp_time;
 			break;
 
@@ -90,6 +92,12 @@ f_state fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 			a_ctx->_vis_pos = 0;
 			break;
 
+		case E_EVENT_BUTTON_MENU:
+			state.cb = fsm_state_scroll_menu;
+			a_ctx->_vis_pos = 0;
+			a_ctx->fsm.ps.cb = fsm_state_disp_temp;
+			break;
+
 		default:
 			state.cb = fsm_state_disp_temp;
 			break;
@@ -109,6 +117,12 @@ f_state fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 			state.cb = fsm_state_scroll_nm;
 			a_ctx->fsm.ps.cb = fsm_state_disp_nm;
 			a_ctx->_vis_pos = 0;
+			break;
+
+		case E_EVENT_BUTTON_MENU:
+			state.cb = fsm_state_scroll_menu;
+			a_ctx->_vis_pos = 0;
+			a_ctx->fsm.ps.cb = fsm_state_disp_nm;
 			break;
 
 		default:
@@ -132,6 +146,12 @@ f_state fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 			a_ctx->_vis_pos = 0;
 			break;
 
+		case E_EVENT_BUTTON_MENU:
+			state.cb = fsm_state_scroll_menu;
+			a_ctx->_vis_pos = 0;
+			a_ctx->fsm.ps.cb = fsm_state_disp_pv;
+			break;
+
 		default:
 			state.cb = fsm_state_disp_pv;
 			break;
@@ -143,6 +163,31 @@ f_state fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	f_state state = {0x00};
+
+	displayMenu(a_ctx);
+
+	switch (ev) {
+		case E_EVENT_TO:
+		case E_EVENT_BUTTON_MENU:
+			// go back to previous state
+			break;
+
+		case E_EVENT_BUTTON_OK:
+			a_ctx->_event_timer = 60;
+			break;
+
+		case E_EVENT_BUTTON_MINUS:
+			a_ctx->_event_timer = 60;
+			break;
+
+		case E_EVENT_BUTTON_PLUS:
+			a_ctx->_event_timer = 60;
+			break;
+
+		default:
+			state.cb = fsm_state_disp_menu;
+			break;
+	}
 	return state;
 }
 
@@ -157,7 +202,6 @@ f_state fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	switch (ev) {
 		case E_EVENT_TRANSITION_END:
 			state.cb = fsm_state_disp_temp;
-			a_ctx->fsm.ps.cb = fsm_state_scroll_time;
 			a_ctx->_event_timer = a_ctx->settings.temp_time;
 			break;
 
@@ -180,7 +224,6 @@ f_state fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 		case E_EVENT_TRANSITION_END:
 			state.cb = fsm_state_disp_time;
-			a_ctx->fsm.ps.cb = fsm_state_scroll_temp;
 			a_ctx->_event_timer = a_ctx->settings.time_time;
 			break;
 
@@ -210,7 +253,6 @@ f_state fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 				state.cb = fsm_state_disp_nm;
 				a_ctx->_event_timer = a_ctx->settings.nm_time;
 			}
-			a_ctx->fsm.ps.cb = fsm_state_scroll_nm;
 			break;
 
 		default:
@@ -256,22 +298,23 @@ f_state fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 f_state fsm_state_scroll_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	f_state state = {0x00};
 
-	// render previous
+	// render menu only, the previous screen execution will be frozen
+	// during the transition
 	displayMenu(a_ctx);
 
 	switch (ev) {
 
 		case E_EVENT_TRANSITION_END:
 			if (a_ctx->fsm.ps.cb == fsm_state_disp_menu) {
-				state.cb = fsm_state_disp_time;
-				a_ctx->_event_timer = a_ctx->settings.time_time;
+				state.cb = a_ctx->fsm.ps.cb;
+				// fixed time in order to make it simple
+				a_ctx->_event_timer = 10;
 			}
 			else {
 				state.cb = fsm_state_disp_menu;
 				// event timer should be refreshed with every button press in the menu
 				a_ctx->_event_timer = 60;
 			}
-			a_ctx->fsm.ps.cb = fsm_state_scroll_menu;
 			break;
 
 		default:
@@ -281,8 +324,6 @@ f_state fsm_state_scroll_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	}
 
 	return state;
-
-
 }
 
 /* ================================================================================ */

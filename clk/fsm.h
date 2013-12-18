@@ -3,16 +3,19 @@
 
 #include <stdint.h>
 
-#define FSM_EVENT_QUEUE_LEN 8
+#define FSM_EVENT_QUEUE_LEN 4
 
 
 typedef enum _fsm_event_t {
 	E_EVENT_TO = 0,
 	E_EVENT_TRANSITION_END,
-	E_EVENT_BUTTON_MENU,
-	E_EVENT_BUTTON_MINUS,
-	E_EVENT_BUTTON_PLUS,
-	E_EVENT_BUTTON_OK,
+
+	// button events
+	E_EVENT_BUTTON_MENU = 0x11,
+	E_EVENT_BUTTON_MINUS = 0x12,
+	E_EVENT_BUTTON_PLUS = 0x14,
+	E_EVENT_BUTTON_PM = 0x16,
+	E_EVENT_BUTTON_OK = 0x18,
 
 	// no event
 	E_EVENT_NONE
