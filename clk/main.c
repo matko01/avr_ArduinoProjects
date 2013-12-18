@@ -21,7 +21,7 @@ volatile struct sys_ctx g_sys_ctx;
 /**
  * @brief menu definition
  */
-extern struct menu main_menu;
+extern struct menu g_main_menu;
 
 
 void main(void) {
@@ -32,7 +32,8 @@ void main(void) {
 	common_zero_mem(&g_sys_ctx, size);
 	SET_CONTRAST(0x00);
 
-	g_sys_ctx.menu = &main_menu;
+	// attach the main menu
+	g_sys_ctx.menu = &g_main_menu;
 
 	// setup state machine
 	fsm_init((struct fsm_t *)&g_sys_ctx.fsm);
