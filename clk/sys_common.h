@@ -18,6 +18,7 @@ void displayTemp(volatile struct sys_ctx *a_ctx);
 void displayTime(volatile struct sys_ctx *a_ctx);
 void displayNameday(volatile struct sys_ctx *a_ctx);
 void displayProverb(volatile struct sys_ctx *a_ctx);
+void displayMenu(volatile struct sys_ctx *a_ctx);
 
 uint8_t is_leap_year(uint8_t a_year);
 uint16_t get_year_day(volatile struct sys_ctx *a_ctx);

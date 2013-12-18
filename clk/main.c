@@ -35,7 +35,7 @@ void main(void) {
 	g_sys_ctx.menu = &main_menu;
 
 	// setup state machine
-	fsm_setup_cb((f_state_cb *)g_sys_ctx.state_cb);
+	fsm_init((struct fsm_t *)&g_sys_ctx.fsm);
 	
 	// get system settings from eeprom
 	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
@@ -99,8 +99,8 @@ void main(void) {
 			g_sys_ctx._time_trigger = 0;
 		}
 
-		g_sys_ctx.fsm.cs = 
-			g_sys_ctx.state_cb[g_sys_ctx.fsm.cs](&g_sys_ctx, event);
+		// execute the state machine
+		g_sys_ctx.fsm.cs = g_sys_ctx.fsm.cs.cb(&g_sys_ctx, event);
 
 		switch(g_sys_ctx.buttons) {
 			case 0x01: // menu

@@ -3,6 +3,7 @@
 #include "namedays.h"
 #include "proverb.h"
 #include "scroll_string.h"
+#include "menu.h"
 
 #include <avr/eeprom.h>
 #include <avr/power.h>
@@ -305,5 +306,9 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
 		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
 	}
+}
 
+
+void displayMenu(volatile struct sys_ctx *a_ctx) {
+	
 }

@@ -98,7 +98,6 @@ struct sys_ctx {
 	// main state machine
 	struct fsm_t fsm;
 	struct event_queue eq;
-	f_state_cb state_cb[E_INVALID];
 
 	// ---- work variables bellow ---- 
 

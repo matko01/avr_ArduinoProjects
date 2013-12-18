@@ -23,7 +23,6 @@ struct menu main_menu = {
 };
 
 
-
 void menu_render(struct menu *a_menu, uint8_t a_elem, char *a_buffer, uint8_t a_linelen) {
 /* 	sprintf(a_buffer, "%c%.*s", */
 /* 			!a_elem ? '>' : ' ', */
