@@ -165,14 +165,9 @@ f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 			break;
 
 		case E_EVENT_BUTTON_OK:
-			a_ctx->_event_timer = 60;
-			break;
-
 		case E_EVENT_BUTTON_MINUS:
-			a_ctx->_event_timer = 60;
-			break;
-
 		case E_EVENT_BUTTON_PLUS:
+			menu_process_input(a_ctx->menu, ev);
 			a_ctx->_event_timer = 60;
 			break;
 	}
