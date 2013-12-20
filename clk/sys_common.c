@@ -311,18 +311,12 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 
 void displayMenu(volatile struct sys_ctx *a_ctx) {
 	uint8_t p[2] = {0x00};
-	uint8_t scr = a_ctx->menu->_curr & ~_BV(1);
 
 	// determine the render position
 	p[0] = a_ctx->_vis_pos ? LCD_LINE01_ADDR : LCD_LINE00_ADDR;
 	p[1] = a_ctx->_vis_pos ? LCD_LINE11_ADDR : LCD_LINE10_ADDR;
 
-	for (uint8_t i = 0; i<2; i++) {
-		snprintf((char *)a_ctx->display[i], 
-				LCD_CHARACTERS_PER_LINE + 1, 
-				"%16s",
-			   	a_ctx->menu->items[a_ctx->menu->_curr]);
-	}
+	menu_render(a_ctx->menu);
 	
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[0]);

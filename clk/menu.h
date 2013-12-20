@@ -23,37 +23,36 @@
 
 
 /**
- * @brief maximum length of the menu item's name
- */
-#define MENU_ITEM_MAX_LENGTH 32
-
-
-/**
  * @brief callback type definition
  */
-typedef void (*menu_callback_t)(void*);
+typedef void (*menu_callback_t)(void*, uint8_t);
 
 
+/// config flag definitions
 #define MENU_ITEM_INACTIVE 0x02
 #define MENU_ITEM_SUBMENU 0x01
 
-// default item configuration
+
+/// default item configuration
 #define MENU_ITEM_DEFAULT 0x00
 
+
+/// used to determine how many items are declared
 #define MENU_ITEMS_SIZE(__items) (sizeof(__items)/sizeof(struct menu_item))
 
-#define MENU_ARROW_UP 0x14
-#define MENU_ARROW_DOWN 0x15
 
 /**
  * @brief menu item definition
  */
 struct menu_item {
-	char name[MENU_ITEM_MAX_LENGTH];
+	const char *name;
 
 	// 1 - inactive/active
 	// 0 - cb/submenu
 	uint8_t config;
+
+	// private data
+	void *pd;
 
 	union {
 		menu_callback_t cb;
@@ -70,12 +69,16 @@ struct menu {
 	struct menu *parent;
 	uint8_t cnt;	
 
-	// internal
-	uint8_t _curr;
+	// cursor position
+	uint8_t _cursor;
+
+	// currently selected menu item
+	struct menu_item *_is;
 };
 
 
-void menu_render(struct menu *a_menu, uint8_t a_elem, char *a_buffer, uint8_t a_linelen);
+void menu_render(struct menu *a_menu);
+void menu_process_input(struct menu *a_menu, uint8_t a_input);
 
 
 #endif /* MENU_H_VHOFYXWZ */

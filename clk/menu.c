@@ -1,39 +1,48 @@
 #include "menu.h"
 #include "pca.h"
+#include "fsm.h"
+#include "lcd.h"
+#include "main.h"
+#include "sys_ctx.h"
 
 
-static void menu_set_time(void*);
-static void menu_set_date(void*);
-static void menu_set_time_mode(void*);
-static void menu_set_lcd_brightness(void*);
-static void menu_set_lcd_contrast(void*);
-static void menu_set_lcd_backlight(void*);
-static void menu_reset_temperature(void*);
-static void menu_set_temp_disp_time(void*);
-static void menu_set_time_disp_time(void*);
-static void menu_set_nameday_disp_time(void*);
-static void menu_set_wow_disp_time(void*);
+#include <util/delay.h>
+
+
+static void menu_set_time(void*,uint8_t);
+static void menu_set_date(void*,uint8_t);
+static void menu_set_time_mode(void*,uint8_t);
+static void menu_set_lcd_brightness(void*,uint8_t);
+static void menu_set_lcd_contrast(void*,uint8_t);
+static void menu_set_lcd_backlight(void*,uint8_t);
+static void menu_reset_temperature(void*,uint8_t);
+static void menu_set_temp_disp_time(void*,uint8_t);
+static void menu_set_time_disp_time(void*,uint8_t);
+static void menu_set_nameday_disp_time(void*,uint8_t);
+static void menu_set_wow_disp_time(void*,uint8_t);
 
 
 struct menu_item items[] = {
-	{ "Set Time", MENU_ITEM_DEFAULT, { menu_set_time } }, 
-	{ "Set Date", MENU_ITEM_DEFAULT, { menu_set_date } }, 
-	{ "Time Mode", MENU_ITEM_DEFAULT, { menu_set_time_mode } }, 
-	{ "LCD Brightness", MENU_ITEM_DEFAULT, { menu_set_lcd_brightness } }, 
-	{ "LCD Contrast", MENU_ITEM_DEFAULT, { menu_set_lcd_contrast } },
-	{ "LCD Backlight", MENU_ITEM_DEFAULT, { menu_set_lcd_backlight } }, 
-	{ "Reset temperature", MENU_ITEM_DEFAULT, { menu_reset_temperature } },
-	{ "Temp Disp Time", MENU_ITEM_DEFAULT, { menu_set_temp_disp_time } },
-	{ "Time Disp Time", MENU_ITEM_DEFAULT, { menu_set_time_disp_time } },
-	{ "Nameday Disp Time", MENU_ITEM_DEFAULT, { menu_set_nameday_disp_time } },
-	{ "WoW Disp Time", MENU_ITEM_DEFAULT, { menu_set_wow_disp_time } }
+	{ "Set Time", 			MENU_ITEM_DEFAULT, NULL, { menu_set_time } }, 
+	{ "Set Date", 			MENU_ITEM_DEFAULT, NULL, { menu_set_date } }, 
+	{ "Time Mode", 			MENU_ITEM_DEFAULT, NULL, { menu_set_time_mode } }, 
+	{ "LCD Brightness", 	MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_brightness } }, 
+	{ "LCD Contrast", 		MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_contrast } },
+	{ "LCD Backlight Time", MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_backlight } }, 
+	{ "Reset temperature", 	MENU_ITEM_DEFAULT, NULL, { menu_reset_temperature } },
+	{ "Temp Disp Time", 	MENU_ITEM_DEFAULT, NULL, { menu_set_temp_disp_time } },
+	{ "Time Disp Time", 	MENU_ITEM_DEFAULT, NULL, { menu_set_time_disp_time } },
+	{ "Nameday Disp Time", 	MENU_ITEM_DEFAULT, NULL, { menu_set_nameday_disp_time } },
+	{ "WoW Disp Time", 		MENU_ITEM_DEFAULT, NULL, { menu_set_wow_disp_time } }
 };
 
 
 struct menu g_main_menu = {
 	.items = items,
 	.parent = NULL,
-	.cnt = MENU_ITEMS_SIZE(items)
+	.cnt = MENU_ITEMS_SIZE(items),
+	._cursor = 0,
+	._is = NULL
 };
 
 
@@ -53,55 +62,110 @@ void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint
 }
 
 
-void menu_render(struct menu *a_menu, uint8_t a_elem, char *a_buffer, uint8_t a_linelen) {
-/* 	sprintf(a_buffer, "%c%.*s", */
-/* 			!a_elem ? '>' : ' ', */
-/* 			a_linelen - 1, */
-/* 			a_menu->items[a_menu->_curr].name); */
+void menu_render(struct menu *a_menu) {
+	uint8_t len = 0;
+	uint8_t so = (a_menu->_cursor & 0xfe);
+
+	if (NULL != a_menu->_is) {
+		// render the function
+		return;
+	}
+
+	printf("cursor: %d, so: %d, cnt: %d\n", a_menu->_cursor, so, a_menu->cnt);
+	
+	// render items
+	for (uint8_t i = 0; i<2; i++) {
+		// clear the buffer
+		len = LCD_CHARACTERS_PER_LINE + 1;
+		common_zero_mem(g_sys_ctx.display[i], len);
+
+		// render an item
+		snprintf((char *)g_sys_ctx.display[i], 
+				LCD_CHARACTERS_PER_LINE + 1, 
+				"%c%-15s",
+				i + so == a_menu->_cursor ? '>' : ' ',
+			   	a_menu->items[(i + so) % a_menu->cnt].name);
+	}
 }
 
 
-static void menu_set_time(void *a_data) {
+void menu_process_input(struct menu *a_menu, uint8_t a_input) {
+	switch (a_input) {
+		case E_EVENT_BUTTON_PLUS:
+			if (NULL == a_menu->_is) {
+				a_menu->_cursor = 
+					(a_menu->_cursor + 1) % a_menu->cnt;
+			}
+			else {
+				a_menu->_is->ptr.cb(a_menu->_is->pd, a_input);
+			}
+			break;
+
+		case E_EVENT_BUTTON_MINUS:
+			if (NULL == a_menu->_is) {
+				a_menu->_cursor = a_menu->_cursor ?
+				   (a_menu->_cursor - 1) : (a_menu->cnt - 1);
+			}
+			else {
+				a_menu->_is->ptr.cb(a_menu->_is->pd, a_input);
+			}			
+			break;
+
+		case E_EVENT_BUTTON_OK:
+			if (NULL == a_menu->_is) {
+				a_menu->_is = &a_menu->items[a_menu->_cursor];
+			}
+			else {
+				a_menu->_is = NULL;
+			}
+			break;
+	} // switch
+	_delay_ms(300);
 }
 
 
-static void menu_set_date(void *a_data) {
+
+static void menu_set_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_time_mode(void *a_data) {
+static void menu_set_date(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_brightness(void *a_data) {
+static void menu_set_time_mode(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_contrast(void *a_data) {
+static void menu_set_lcd_brightness(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_backlight(void *a_data) {
+static void menu_set_lcd_contrast(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_reset_temperature(void *a_data) {
+static void menu_set_lcd_backlight(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_temp_disp_time(void *a_data) {
+static void menu_reset_temperature(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_time_disp_time(void *a_data) {
+static void menu_set_temp_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_nameday_disp_time(void *a_data) {
+static void menu_set_time_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_wow_disp_time(void *a_data) {
+static void menu_set_nameday_disp_time(void *a_data, uint8_t a_event) {
+}
+
+
+static void menu_set_wow_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
