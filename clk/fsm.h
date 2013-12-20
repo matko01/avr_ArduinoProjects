@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define FSM_EVENT_QUEUE_LEN 4
+#define FSM_PRIVATE_DATA 4
 
 
 typedef enum _fsm_event_t {
@@ -43,6 +44,9 @@ struct fsm_t {
 
 	// previous state
 	f_state ps;
+
+	// private data
+	uint8_t pd[FSM_PRIVATE_DATA];
 };
 
 

@@ -163,6 +163,7 @@ f_state fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 	f_state state = {0x00};
+	state.cb = fsm_state_disp_menu;
 
 	displayMenu(a_ctx);
 
@@ -182,10 +183,6 @@ f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 		case E_EVENT_BUTTON_PLUS:
 			a_ctx->_event_timer = 60;
-			break;
-
-		default:
-			state.cb = fsm_state_disp_menu;
 			break;
 	}
 	return state;

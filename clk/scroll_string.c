@@ -44,11 +44,11 @@ void scroll_str_paste(struct scroll_str *a_scrl_str, char *a_output, uint8_t a_l
 		}
 	}
 
-	if (!(a_cnt % 28) && !a_scrl_str->_f) {
+	if (!(a_cnt % 24) && !a_scrl_str->_f) {
 		a_scrl_str->pos = (a_scrl_str->pos + 1) % (a_scrl_str->len + del_len);
 		a_scrl_str->_f = 1;
 	}
-	else if (a_cnt % 28) {
+	else if (a_cnt % 24) {
 		a_scrl_str->_f = 0;
 	}
 }
