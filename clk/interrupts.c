@@ -23,7 +23,7 @@ ISR(TIMER0_OVF_vect) {
 	tmp_update_tv(&g_sys_ctx.temp_ctx);
 
 	// fade in / fade out
-	if (&g_sys_ctx.lcd_backlight_timer || !g_sys_ctx.settings.lcd_bt_time) {
+	if (&g_sys_ctx.lcd_backlight_timer || 0 == g_sys_ctx.settings.lcd_bt_time) {
 		if (OCR2A < g_sys_ctx.settings.lcd_brightness) 
 			++OCR2A;
 		
@@ -36,7 +36,7 @@ ISR(TIMER0_OVF_vect) {
 
 		// screen shift animation
 		if (g_sys_ctx._vis_pos > g_sys_ctx._cur_pos) {
-			if (!(g_sys_ctx._cur_pos++%8))
+			if (0 == (g_sys_ctx._cur_pos++%8))
 				// scroll left <--
 				hd44780_write((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
 						HD44780_CMD_CD_SHIFT(1, 0), 0);
