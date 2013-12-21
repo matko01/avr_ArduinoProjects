@@ -21,7 +21,7 @@ AS=avr-as
 STRIP=avr-strip
 OBJC=avr-objcopy
 MCU=atmega328p
-CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=gnu99 \
+CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Wno-strict-aliasing -Os -DF_CPU=16000000UL -std=gnu99 \
 	   -ffunction-sections \
 	   -fdata-sections \
 	   -ffreestanding \

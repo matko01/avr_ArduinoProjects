@@ -31,6 +31,7 @@ void main(void) {
 	// initialize the global context
 	common_zero_mem(&g_sys_ctx, size);
 	SET_CONTRAST(0x00);
+	SET_BRIGHTNESS(0x00);
 
 	// attach the main menu
 	g_sys_ctx.menu = &g_main_menu;
@@ -62,6 +63,7 @@ void main(void) {
 
 	// restore saved contrast value
 	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
+	SET_BRIGHTNESS(g_sys_ctx.settings.lcd_brightness);
 
 	// initialize the FSM
 	// initial state = 0 (TIME)	

@@ -3,6 +3,7 @@
 
 #include <string.h>
 
+
 void scroll_str_init(struct scroll_str *a_scrl_str, char *a_str, uint8_t a_len) {
 	a_scrl_str->s = a_str;
 	a_scrl_str->len = a_len;
@@ -44,11 +45,12 @@ void scroll_str_paste(struct scroll_str *a_scrl_str, char *a_output, uint8_t a_l
 		}
 	}
 
-	if (!(a_cnt % 24) && !a_scrl_str->_f) {
+	if (!(a_cnt % SCROLLING_SPEED) && !a_scrl_str->_f) {
 		a_scrl_str->pos = (a_scrl_str->pos + 1) % (a_scrl_str->len + del_len);
 		a_scrl_str->_f = 1;
 	}
-	else if (a_cnt % 24) {
+	else if (a_cnt % SCROLLING_SPEED) {
 		a_scrl_str->_f = 0;
 	}
 }
+

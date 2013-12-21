@@ -17,7 +17,7 @@ void timers_setup() {
 	power_timer2_enable();
 
 	// fast PWM mode on OC2A (PB3) - OC2B (PD3)
-	// in non interting mode
+	// in non inverting mode
 	// prescaler = 256
 	TCCR2A = 0xa3;
 	TCCR2B = 0x01;
@@ -161,7 +161,7 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 	if (a_ctx->tm.mode_ampm_hour & 0x40) {
 		// 12 hour mode
 		snprintf((char *)a_ctx->display[0], 
-				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %s",
+				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %-7s",
 				a_ctx->tm.mode_ampm_hour & 0x1f,
 				a_ctx->tm.min,
 				a_ctx->tm.ch_sec & 0x7f,
@@ -169,10 +169,11 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 	}
 	else {
 		snprintf((char *)a_ctx->display[0], 
-				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x",
+				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %7s",
 				a_ctx->tm.mode_ampm_hour & 0x3f,
 				a_ctx->tm.min,
-				a_ctx->tm.ch_sec & 0x7f);
+				a_ctx->tm.ch_sec & 0x7f,
+				" ");
 	}
 
 	snprintf((char *)a_ctx->display[1], 
@@ -309,12 +310,18 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 }
 
 
+uint8_t get_display_offset(volatile struct sys_ctx *a_ctx, uint8_t line) {
+	// determine the render position
+	return (line ? 
+		(a_ctx->_vis_pos ? LCD_LINE11_ADDR : LCD_LINE10_ADDR) :
+		(a_ctx->_vis_pos ? LCD_LINE01_ADDR : LCD_LINE00_ADDR));
+}
+
+
 void displayMenu(volatile struct sys_ctx *a_ctx) {
 	uint8_t p[2] = {0x00};
-
-	// determine the render position
-	p[0] = a_ctx->_vis_pos ? LCD_LINE01_ADDR : LCD_LINE00_ADDR;
-	p[1] = a_ctx->_vis_pos ? LCD_LINE11_ADDR : LCD_LINE10_ADDR;
+	p[0] = get_display_offset(a_ctx, 0);
+	p[1] = get_display_offset(a_ctx, 1);
 
 	menu_render(a_ctx->menu);
 	
@@ -323,5 +330,22 @@ void displayMenu(volatile struct sys_ctx *a_ctx) {
 		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[1]);
 		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
+	}
+}
+
+
+void displayClean(volatile struct sys_ctx *a_ctx, uint8_t a_which) {
+	uint8_t p[2] = {0x00};
+
+	sprintf((char *)a_ctx->display[0],"%16s", " ");
+
+	p[0] = a_which ? LCD_LINE01_ADDR : LCD_LINE00_ADDR;
+	p[1] = a_which ? LCD_LINE11_ADDR : LCD_LINE10_ADDR;
+
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[0]);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[1]);
+		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
 	}
 }

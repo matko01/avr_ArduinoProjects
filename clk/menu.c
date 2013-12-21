@@ -4,10 +4,13 @@
 #include "lcd.h"
 #include "main.h"
 #include "sys_ctx.h"
+#include "sys_common.h"
+#include "scroll_string.h"
 
-
+#include <string.h>
 #include <util/delay.h>
 
+/* ================================================================================ */
 
 static void menu_set_time(void*,uint8_t);
 static void menu_set_date(void*,uint8_t);
@@ -21,6 +24,7 @@ static void menu_set_time_disp_time(void*,uint8_t);
 static void menu_set_nameday_disp_time(void*,uint8_t);
 static void menu_set_wow_disp_time(void*,uint8_t);
 
+/* ================================================================================ */
 
 struct menu_item items[] = {
 	{ "Set Time", 			MENU_ITEM_DEFAULT, NULL, { menu_set_time } }, 
@@ -45,6 +49,7 @@ struct menu g_main_menu = {
 	._is = NULL
 };
 
+/* ================================================================================ */
 
 void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint8_t a_max, uint8_t a_cur) {
 	uint8_t range = a_max - a_min;
@@ -57,7 +62,7 @@ void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint
 	}
 
 	for (uint8_t i = 1; i<a_len-1; i++) {
-		a_buffer[i] = i<progress ? '-' : ' ';
+		a_buffer[i] = i<progress ? '#' : ' ';
 	}
 }
 
@@ -65,14 +70,32 @@ void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint
 void menu_render(struct menu *a_menu) {
 	uint8_t len = 0;
 	uint8_t so = (a_menu->_cursor & 0xfe);
+	static struct scroll_str str = {0x00};
 
-	if (NULL != a_menu->_is) {
-		// render the function
+	if (NULL != a_menu->_is && 
+			!(a_menu->_is->config & MENU_ITEM_INACTIVE)) {
+		char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
+
+		if (str.s != a_menu->_is->name) str.pos = 0;
+		str.s = (char *)a_menu->_is->name;
+		str.len = strlen(a_menu->_is->name);
+
+		// get a string slice
+		scroll_str_paste(&str, output, sizeof(output) - 1, g_sys_ctx._fast_counter);
+
+		// render the function name
+		snprintf((char *)g_sys_ctx.display[0], 
+				LCD_CHARACTERS_PER_LINE + 1, 
+				"%-16s",				
+			   	output);
+
+		// ... and the function itself
+		if (!(a_menu->_is->config & MENU_ITEM_SUBMENU)) 
+			a_menu->_is->ptr.cb(a_menu->_is->pd, E_EVENT_NONE);
+
 		return;
 	}
 
-	printf("cursor: %d, so: %d, cnt: %d\n", a_menu->_cursor, so, a_menu->cnt);
-	
 	// render items
 	for (uint8_t i = 0; i<2; i++) {
 		// clear the buffer
@@ -138,10 +161,62 @@ static void menu_set_time_mode(void *a_data, uint8_t a_event) {
 
 
 static void menu_set_lcd_brightness(void *a_data, uint8_t a_event) {
+	char pg[13] = {0x00};
+
+	switch (a_event) {
+		case E_EVENT_BUTTON_MINUS:
+			if (g_sys_ctx.settings.lcd_brightness >= 0x08)
+				g_sys_ctx.settings.lcd_brightness -= 0x08;
+			else 
+				g_sys_ctx.settings.lcd_brightness = 0;
+			break;
+
+		case E_EVENT_BUTTON_PLUS:
+			if (g_sys_ctx.settings.lcd_brightness < 0xf7)
+				g_sys_ctx.settings.lcd_brightness += 0x08;
+			else 
+				g_sys_ctx.settings.lcd_brightness = 0xff;
+			break;
+	} // switch
+
+	SET_BRIGHTNESS(g_sys_ctx.settings.lcd_brightness);
+	menu_render_progress_bar(pg, 12, 0, 255, g_sys_ctx.settings.lcd_brightness);
+
+	snprintf((char *)g_sys_ctx.display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, 
+			"%03d %s",
+			g_sys_ctx.settings.lcd_brightness,
+			pg);
 }
 
 
 static void menu_set_lcd_contrast(void *a_data, uint8_t a_event) {
+	char pg[13] = {0x00};
+
+	switch (a_event) {
+		case E_EVENT_BUTTON_MINUS:
+			if (g_sys_ctx.settings.lcd_contrast >= 0x08)
+				g_sys_ctx.settings.lcd_contrast -= 0x08;
+			else 
+				g_sys_ctx.settings.lcd_contrast = 0;
+			break;
+
+		case E_EVENT_BUTTON_PLUS:
+			if (g_sys_ctx.settings.lcd_contrast < 0xf7)
+				g_sys_ctx.settings.lcd_contrast += 0x08;
+			else 
+				g_sys_ctx.settings.lcd_contrast = 0xff;
+			break;
+	} // switch
+
+	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
+	menu_render_progress_bar(pg, 12, 0, 255, g_sys_ctx.settings.lcd_contrast);
+
+	snprintf((char *)g_sys_ctx.display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, 
+			"%03d %s",
+			g_sys_ctx.settings.lcd_contrast,
+			pg);
 }
 
 

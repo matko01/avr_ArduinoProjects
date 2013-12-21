@@ -1,6 +1,9 @@
 #ifndef __SCROLL_STRING_H__
 #define __SCROLL_STRING_H__
 
+#include <stdint.h>
+
+#define SCROLLING_SPEED 16
 
 struct scroll_str {
 	uint8_t pos;
