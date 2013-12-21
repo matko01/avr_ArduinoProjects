@@ -12,7 +12,7 @@
 /**
  * @brief default magic identifier value
  */
-#define SETTINGS_MAGIC_ID 0x0c
+#define SETTINGS_MAGIC_ID 0x0d
 
 
 /**
@@ -33,7 +33,7 @@ struct sys_settings {
 
 	// back-light on time
 	// 0 - always on	
-	uint8_t lcd_bt_time;
+	uint16_t lcd_bt_time;
 
 	// how long the temp screen will be displayed
 	uint8_t temp_time;

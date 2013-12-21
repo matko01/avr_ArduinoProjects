@@ -61,10 +61,6 @@ void main(void) {
 	tmp_setup(&g_sys_ctx.temp_ctx, (struct soft_ow *)&g_sys_ctx.sow_ctx);
 	timers_setup();
 
-	// restore saved contrast value
-	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
-	SET_BRIGHTNESS(g_sys_ctx.settings.lcd_brightness);
-
 	// initialize the FSM
 	// initial state = 0 (TIME)	
 	g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
@@ -72,6 +68,9 @@ void main(void) {
 	// now it's safe to globally enable ints
 	// HW should be up & running
 	sei();
+
+	// restore saved contrast value
+	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
 
 	serial_init(E_BAUD_9600);	
 	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
@@ -107,6 +106,10 @@ void main(void) {
 
 		// if button pressed
 		if (g_sys_ctx.buttons) {
+			// refresh the timer
+			g_sys_ctx.lcd_backlight_timer = g_sys_ctx.settings.lcd_bt_time;
+
+			// push a key-press event
 			fsm_event_push(&g_sys_ctx.eq, 0x10 + g_sys_ctx.buttons);
 		}
 

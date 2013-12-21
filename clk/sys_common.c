@@ -117,12 +117,8 @@ void sys_settings_get(struct sys_settings *a_ss) {
 		a_ss->lcd_contrast = 0xff;
 		a_ss->lcd_bt_time = 0;
 
-		/* a_ss->temp_time = 14; */
-		/* a_ss->time_time = 20; */
-		/* a_ss->nm_time = 10; */
-
-		a_ss->temp_time = 10;
-		a_ss->time_time = 10;
+		a_ss->temp_time = 15;
+		a_ss->time_time = 20;
 		a_ss->nm_time = 10;
 		a_ss->pv_time = 30;
 
@@ -265,7 +261,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
 
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
@@ -299,7 +295,7 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
 
 	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom:");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%s", output); 
+	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
 
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
 		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);

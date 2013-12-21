@@ -23,10 +23,9 @@ ISR(TIMER0_OVF_vect) {
 	tmp_update_tv(&g_sys_ctx.temp_ctx);
 
 	// fade in / fade out
-	if (&g_sys_ctx.lcd_backlight_timer || 0 == g_sys_ctx.settings.lcd_bt_time) {
+	if (g_sys_ctx.lcd_backlight_timer || 0 == g_sys_ctx.settings.lcd_bt_time) {
 		if (OCR2A < g_sys_ctx.settings.lcd_brightness) 
 			++OCR2A;
-		
 	}
 	else {
 		if (OCR2A) OCR2A--;
@@ -98,8 +97,9 @@ ISR(INT0_vect) {
 	// toggle the LED
 	GPIO_TOGGLE(&g_sys_ctx.led);
 
-	if (g_sys_ctx.settings.lcd_bt_time) 
-		g_sys_ctx.settings.lcd_bt_time--;
+	// decrement the back light timer
+	if (g_sys_ctx.lcd_backlight_timer) 
+		g_sys_ctx.lcd_backlight_timer--;
 
 	if (g_sys_ctx._event_timer) {
 		if (!--g_sys_ctx._event_timer) {
