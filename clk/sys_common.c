@@ -73,7 +73,7 @@ void rtc_setup(volatile struct twi_ctx *a_ctx) {
 		common_zero_mem(data,len);
 
 		// TODO temporary changed, should be 0x80 - HALTED
-		data[1] = 0x10; // clock halted
+		data[1] = 0x80; // clock halted
 
 		data[1 + DS1307_DOW_ADDR] = 1;
 		data[1 + DS1307_DOM_ADDR] = 1;

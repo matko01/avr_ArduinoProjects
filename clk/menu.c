@@ -162,7 +162,6 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 }
 
 
-
 static void menu_set_time(void *a_data, uint8_t a_event) {
 	// TODO implement me
 }
@@ -173,13 +172,43 @@ static void menu_set_date(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_time_mode(void *a_data, uint8_t a_event) {
+static void menu_reset_temperature(void *a_data, uint8_t a_event) {
 	// TODO implement me
 }
 
 
-static void menu_reset_temperature(void *a_data, uint8_t a_event) {
-	// TODO implement me
+static void menu_set_time_mode(void *a_data, uint8_t a_event) {
+	uint8_t data[2] = {DS1307_HOURS_ADDR};
+	const char *mode[] = {
+		"24 mode",
+		"12 AM/PM mode"
+	};
+
+	switch (a_event) {
+		case E_EVENT_BUTTON_MINUS:
+		case E_EVENT_BUTTON_PLUS:
+
+			twi_mtx(TWI_RTC_ADDR, data, 0x01, 0x00);
+			while (g_sys_ctx.twi_ctx->status & E_TWI_BIT_BUSY);
+			twi_mrx(TWI_RTC_ADDR, &data[1], sizeof(uint8_t), E_TWI_BIT_SEND_STOP);
+			while (g_sys_ctx.twi_ctx->status & E_TWI_BIT_BUSY);
+
+			if (data[1] & 0x40) {
+				data[1] &= ~0x40;
+			}
+			else {
+				data[1] |= 0x40;
+			}
+
+			twi_mtx(TWI_RTC_ADDR, data, 2, E_TWI_BIT_SEND_STOP);
+			while (g_sys_ctx.twi_ctx->status & E_TWI_BIT_BUSY);
+			break;
+	} // switch
+
+	snprintf((char *)g_sys_ctx.display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, 
+			" %-15s",
+			mode[(g_sys_ctx.tm.mode_ampm_hour & 0x40) >> 6]);
 }
 
 
