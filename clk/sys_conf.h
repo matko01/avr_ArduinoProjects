@@ -5,6 +5,9 @@
 // I2C address of the TWI device
 #define TWI_RTC_ADDR 0x68
 
+#define RTC_MAGIC_OFFSET (DS1307_CONTROL_ADDR + 1)
+#define MAX_TEMP_ADDR (RTC_MAGIC_OFFSET + 1)
+#define MIN_TEMP_ADDR (MAX_TEMP_ADDR + 2)
 
 // one wire thermometer setup
 #define OW_PORT PORTB

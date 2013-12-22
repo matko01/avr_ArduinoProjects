@@ -5,7 +5,7 @@
 #include "main.h"
 #include "sys_ctx.h"
 #include "sys_common.h"
-#include "scroll_string.h"
+#include "string_util.h"
 
 #include <string.h>
 #include <util/delay.h>
@@ -168,7 +168,28 @@ static void menu_set_time(uint8_t a_event) {
 
 
 static void menu_set_date(uint8_t a_event) {
-	// TODO implement me
+	static uint8_t position = 0;
+	uint8_t data[2] = {DS1307_DOM_ADDR};
+
+	switch(position) {
+		case 0:
+			break;
+
+		case 1:
+			break;
+
+		case 2:
+			break;
+
+		default:
+			break;
+	} // switch
+
+	snprintf((char *)g_sys_ctx.display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, " %4d-%02x-%02x     ",
+			BCD2BIN(g_sys_ctx.tm.year) + 2000,
+			g_sys_ctx.tm.month,
+			g_sys_ctx.tm.dom);
 }
 
 

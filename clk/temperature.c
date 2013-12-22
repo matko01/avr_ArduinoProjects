@@ -77,3 +77,5 @@ void tmp_trigger_measurement(volatile struct temp_msr_ctx *a_ctx,
 		}
 	}
 }
+
+

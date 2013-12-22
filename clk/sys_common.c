@@ -2,7 +2,7 @@
 #include "sys_conf.h"
 #include "namedays.h"
 #include "proverb.h"
-#include "scroll_string.h"
+#include "string_util.h"
 #include "menu.h"
 #include "main.h"
 

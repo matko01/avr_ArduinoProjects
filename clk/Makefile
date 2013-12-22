@@ -1,7 +1,7 @@
 TARGET=clk
 SOURCES= \
 		 sys_common.c \
-		 scroll_string.c \
+		 string_util.c \
 		 interrupts.c \
 		 temperature.c \
 		 fsm.c \
