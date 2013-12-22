@@ -41,13 +41,13 @@ uint8_t fsm_event_pop(volatile struct event_queue *eq) {
 
 /* ================================================================================ */
 
-f_state fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_disp_time(uint8_t ev) {
 	static uint8_t cnt = 0;
 	f_state state;
 	state.cb = fsm_state_disp_time;
 
 	// run the display procedure
-	displayTime(a_ctx);
+	displayTime();
 
 	switch (ev) {
 		case E_EVENT_TO:
@@ -62,15 +62,15 @@ f_state fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 				// scroll to temp
 				state.cb = fsm_state_scroll_time;
 			}
-			a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
-			a_ctx->fsm.ps.cb = fsm_state_disp_time;
+			g_sys_ctx._vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_time;
 			break;			
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			a_ctx->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
-			displayClean(a_ctx, 1);
-			a_ctx->fsm.ps.cb = fsm_state_disp_time;
+			g_sys_ctx._vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			displayClean(1);
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_time;
 			break;
 	}
 
@@ -78,24 +78,24 @@ f_state fsm_state_disp_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_disp_temp(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_disp_temp;
-	displayTemp(a_ctx);
+	displayTemp();
 
 	switch (ev) {
 		case E_EVENT_TO:
 		case E_EVENT_BUTTON_OK:
 			state.cb = fsm_state_scroll_temp;
-			a_ctx->fsm.ps.cb = fsm_state_disp_temp;
-			a_ctx->_vis_pos = 0;
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_temp;
+			g_sys_ctx._vis_pos = 0;
 			break;
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			a_ctx->_vis_pos = 0;
-			displayClean(a_ctx, 0);
-			a_ctx->fsm.ps.cb = fsm_state_disp_temp;
+			g_sys_ctx._vis_pos = 0;
+			displayClean(0);
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_temp;
 			break;
 	}
 
@@ -103,24 +103,24 @@ f_state fsm_state_disp_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_disp_nm(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_disp_nm;
-	displayNameday(a_ctx);
+	displayNameday();
 
 	switch (ev) {
 		case E_EVENT_TO:
 		case E_EVENT_BUTTON_OK:
 			state.cb = fsm_state_scroll_nm;
-			a_ctx->fsm.ps.cb = fsm_state_disp_nm;
-			a_ctx->_vis_pos = 0;
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_nm;
+			g_sys_ctx._vis_pos = 0;
 			break;
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			a_ctx->_vis_pos = 0;
-			displayClean(a_ctx, 0);
-			a_ctx->fsm.ps.cb = fsm_state_disp_nm;
+			g_sys_ctx._vis_pos = 0;
+			displayClean(0);
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_nm;
 			break;
 	}
 
@@ -128,24 +128,24 @@ f_state fsm_state_disp_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_disp_pv(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_disp_pv;
-	displayProverb(a_ctx);
+	displayProverb();
 
 	switch (ev) {
 		case E_EVENT_TO:
 		case E_EVENT_BUTTON_OK:
 			state.cb = fsm_state_scroll_pv;
-			a_ctx->fsm.ps.cb = fsm_state_disp_pv;
-			a_ctx->_vis_pos = 0;
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_pv;
+			g_sys_ctx._vis_pos = 0;
 			break;
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			a_ctx->_vis_pos = 0;
-			displayClean(a_ctx, 0);
-			a_ctx->fsm.ps.cb = fsm_state_disp_pv;
+			g_sys_ctx._vis_pos = 0;
+			displayClean(0);
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_pv;
 			break;
 
 	} // switch
@@ -154,26 +154,26 @@ f_state fsm_state_disp_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_disp_menu(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_disp_menu;
 
-	displayMenu(a_ctx);
+	displayMenu();
 
 	switch (ev) {
 		case E_EVENT_TO:
 		case E_EVENT_BUTTON_MENU:
 			// go back to previous state
 			state.cb = fsm_state_scroll_menu;
-			a_ctx->fsm.ps.cb = fsm_state_disp_menu;
-			a_ctx->_vis_pos = a_ctx->_vis_pos ? 0 : ((LCD_CHARACTERS_PER_LINE + 1)*8);
+			g_sys_ctx.fsm.ps.cb = fsm_state_disp_menu;
+			g_sys_ctx._vis_pos = g_sys_ctx._vis_pos ? 0 : ((LCD_CHARACTERS_PER_LINE + 1)*8);
 			break;
 
 		case E_EVENT_BUTTON_OK:
 		case E_EVENT_BUTTON_MINUS:
 		case E_EVENT_BUTTON_PLUS:
-			menu_process_input(a_ctx->menu, ev);
-			a_ctx->_event_timer = 60;
+			menu_process_input(g_sys_ctx.menu, ev);
+			g_sys_ctx._event_timer = 60;
 			break;
 	}
 	return state;
@@ -182,17 +182,17 @@ f_state fsm_state_disp_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 
 /* ================================================================================ */
 
-f_state fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_scroll_time(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_scroll_time;
 
-	displayTime(a_ctx);
-	displayTemp(a_ctx);
+	displayTime();
+	displayTemp();
 
 	switch (ev) {
 		case E_EVENT_TRANSITION_END:
 			state.cb = fsm_state_disp_temp;
-			a_ctx->_event_timer = a_ctx->settings.temp_time;
+			g_sys_ctx._event_timer = g_sys_ctx.settings.temp_time;
 			break;
 
 		default:
@@ -205,18 +205,18 @@ f_state fsm_state_scroll_time(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_scroll_temp(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_scroll_temp;
 
-	displayTime(a_ctx);
-	displayTemp(a_ctx);
+	displayTime();
+	displayTemp();
 
 	switch (ev) {
 
 		case E_EVENT_TRANSITION_END:
 			state.cb = fsm_state_disp_time;
-			a_ctx->_event_timer = a_ctx->settings.time_time;
+			g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
 			break;
 
 		default:
@@ -229,23 +229,23 @@ f_state fsm_state_scroll_temp(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_scroll_nm(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_scroll_nm;
 
-	displayTime(a_ctx);
-	displayNameday(a_ctx);
+	displayTime();
+	displayNameday();
 
 	switch (ev) {
 
 		case E_EVENT_TRANSITION_END:
-			if (a_ctx->fsm.ps.cb == fsm_state_disp_nm) {
+			if (g_sys_ctx.fsm.ps.cb == fsm_state_disp_nm) {
 				state.cb = fsm_state_disp_time;
-				a_ctx->_event_timer = a_ctx->settings.time_time;
+				g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
 			}
 			else {
 				state.cb = fsm_state_disp_nm;
-				a_ctx->_event_timer = a_ctx->settings.nm_time;
+				g_sys_ctx._event_timer = g_sys_ctx.settings.nm_time;
 			}
 			break;
 
@@ -259,25 +259,25 @@ f_state fsm_state_scroll_nm(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_scroll_pv(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_scroll_pv;
 
-	displayTime(a_ctx);
-	displayProverb(a_ctx);
+	displayTime();
+	displayProverb();
 
 	switch (ev) {
 
 		case E_EVENT_TRANSITION_END:
-			if (a_ctx->fsm.ps.cb == fsm_state_disp_pv) {
+			if (g_sys_ctx.fsm.ps.cb == fsm_state_disp_pv) {
 				state.cb = fsm_state_disp_time;
-				a_ctx->_event_timer = a_ctx->settings.time_time;
+				g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
 			}
 			else {
 				state.cb = fsm_state_disp_pv;
-				a_ctx->_event_timer = a_ctx->settings.pv_time;
+				g_sys_ctx._event_timer = g_sys_ctx.settings.pv_time;
 			}
-			a_ctx->fsm.ps.cb = fsm_state_scroll_pv;
+			g_sys_ctx.fsm.ps.cb = fsm_state_scroll_pv;
 			break;
 
 		default:
@@ -291,35 +291,35 @@ f_state fsm_state_scroll_pv(volatile struct sys_ctx *a_ctx, uint8_t ev) {
 }
 
 
-f_state fsm_state_scroll_menu(volatile struct sys_ctx *a_ctx, uint8_t ev) {
+f_state fsm_state_scroll_menu(uint8_t ev) {
 	f_state state;
 	state.cb = fsm_state_scroll_menu;
 
-	if (a_ctx->fsm.ps.cb != fsm_state_disp_menu) {
+	if (g_sys_ctx.fsm.ps.cb != fsm_state_disp_menu) {
 		// render menu only, the previous screen execution will be frozen
 		// during the transition
-		displayMenu(a_ctx);
+		displayMenu();
 	}
 
 	switch (ev) {
 		case E_EVENT_TRANSITION_END:
-			if (a_ctx->fsm.ps.cb == fsm_state_disp_menu) {
+			if (g_sys_ctx.fsm.ps.cb == fsm_state_disp_menu) {
 				// transition from menu to the original screen
 
 				// restore the old state from the private data
-				state = *((f_state *)a_ctx->fsm.pd);
+				state = *((f_state *)g_sys_ctx.fsm.pd);
 				// fixed time in order to make it simple
-				a_ctx->_event_timer = 10;
+				g_sys_ctx._event_timer = 10;
 			}
 			else {
 				// transition to menu screen
 
 				// save the current state to private data				
-				*((f_state *)a_ctx->fsm.pd) = a_ctx->fsm.ps;
+				*((f_state *)g_sys_ctx.fsm.pd) = g_sys_ctx.fsm.ps;
 
 				state.cb = fsm_state_disp_menu;
 				// event timer should be refreshed with every button press in the menu
-				a_ctx->_event_timer = 60;
+				g_sys_ctx._event_timer = 60;
 			}
 			break;
 

@@ -13,34 +13,34 @@
 
 /* ================================================================================ */
 
-static void menu_set_time(void*,uint8_t);
-static void menu_set_date(void*,uint8_t);
-static void menu_set_time_mode(void*,uint8_t);
-static void menu_set_lcd_brightness(void*,uint8_t);
-static void menu_set_lcd_contrast(void*,uint8_t);
-static void menu_set_lcd_backlight(void*,uint8_t);
-static void menu_reset_temperature(void*,uint8_t);
-static void menu_set_temp_disp_time(void*,uint8_t);
-static void menu_set_time_disp_time(void*,uint8_t);
-static void menu_set_nameday_disp_time(void*,uint8_t);
-static void menu_set_wow_disp_time(void*,uint8_t);
-static void menu_save_settings(void*,uint8_t);
+static void menu_set_time(uint8_t);
+static void menu_set_date(uint8_t);
+static void menu_set_time_mode(uint8_t);
+static void menu_set_lcd_brightness(uint8_t);
+static void menu_set_lcd_contrast(uint8_t);
+static void menu_set_lcd_backlight(uint8_t);
+static void menu_reset_temperature(uint8_t);
+static void menu_set_temp_disp_time(uint8_t);
+static void menu_set_time_disp_time(uint8_t);
+static void menu_set_nameday_disp_time(uint8_t);
+static void menu_set_wow_disp_time(uint8_t);
+static void menu_save_settings(uint8_t);
 
 /* ================================================================================ */
 
 struct menu_item items[] = {
-	{ "Set Time", 					MENU_ITEM_DEFAULT, NULL, { menu_set_time } }, 
-	{ "Set Date", 					MENU_ITEM_DEFAULT, NULL, { menu_set_date } }, 
-	{ "Time Mode", 					MENU_ITEM_DEFAULT, NULL, { menu_set_time_mode } }, 
-	{ "LCD Brightness", 			MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_brightness } }, 
-	{ "LCD Contrast", 				MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_contrast } },
-	{ "LCD Backlight Time", 		MENU_ITEM_DEFAULT, NULL, { menu_set_lcd_backlight } }, 
-	{ "Reset temperature", 			MENU_ITEM_DEFAULT, NULL, { menu_reset_temperature } },
-	{ "Temperature Display Time", 	MENU_ITEM_DEFAULT, NULL, { menu_set_temp_disp_time } },
-	{ "Time Display Time", 			MENU_ITEM_DEFAULT, NULL, { menu_set_time_disp_time } },
-	{ "Nameday Display Time", 		MENU_ITEM_DEFAULT, NULL, { menu_set_nameday_disp_time } },
-	{ "WoW Display Time", 			MENU_ITEM_DEFAULT, NULL, { menu_set_wow_disp_time } },
-	{ "Save Settings to EEPROM", 	MENU_ITEM_DEFAULT, NULL, { menu_save_settings } }
+	{ "Set Time", 					MENU_ITEM_DEFAULT, { menu_set_time } }, 
+	{ "Set Date", 					MENU_ITEM_DEFAULT, { menu_set_date } }, 
+	{ "Time Mode", 					MENU_ITEM_DEFAULT, { menu_set_time_mode } }, 
+	{ "LCD Brightness", 			MENU_ITEM_DEFAULT, { menu_set_lcd_brightness } }, 
+	{ "LCD Contrast", 				MENU_ITEM_DEFAULT, { menu_set_lcd_contrast } },
+	{ "LCD Backlight Time", 		MENU_ITEM_DEFAULT, { menu_set_lcd_backlight } }, 
+	{ "Reset temperature", 			MENU_ITEM_DEFAULT, { menu_reset_temperature } },
+	{ "Temperature Display Time", 	MENU_ITEM_DEFAULT, { menu_set_temp_disp_time } },
+	{ "Time Display Time", 			MENU_ITEM_DEFAULT, { menu_set_time_disp_time } },
+	{ "Nameday Display Time", 		MENU_ITEM_DEFAULT, { menu_set_nameday_disp_time } },
+	{ "WoW Display Time", 			MENU_ITEM_DEFAULT, { menu_set_wow_disp_time } },
+	{ "Save Settings to EEPROM", 	MENU_ITEM_DEFAULT, { menu_save_settings } }
 };
 
 
@@ -94,7 +94,7 @@ void menu_render(struct menu *a_menu) {
 
 		// ... and the function itself
 		if (!(a_menu->_is->config & MENU_ITEM_SUBMENU)) 
-			a_menu->_is->ptr.cb(a_menu->_is->pd, E_EVENT_NONE);
+			a_menu->_is->ptr.cb(E_EVENT_NONE);
 
 		return;
 	}
@@ -134,7 +134,7 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 					(a_menu->_cursor + 1) % a_menu->cnt;
 			}
 			else {
-				a_menu->_is->ptr.cb(a_menu->_is->pd, a_input);
+				a_menu->_is->ptr.cb(a_input);
 			}
 			break;
 
@@ -144,7 +144,7 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 				   (a_menu->_cursor - 1) : (a_menu->cnt - 1);
 			}
 			else {
-				a_menu->_is->ptr.cb(a_menu->_is->pd, a_input);
+				a_menu->_is->ptr.cb(a_input);
 			}			
 			break;
 
@@ -153,7 +153,7 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 				a_menu->_is = &a_menu->items[a_menu->_cursor];
 			}
 			else {
-				a_menu->_is->ptr.cb(a_menu->_is->pd, a_input);
+				a_menu->_is->ptr.cb(a_input);
 				a_menu->_is = NULL;
 			}
 			break;
@@ -162,22 +162,22 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 }
 
 
-static void menu_set_time(void *a_data, uint8_t a_event) {
+static void menu_set_time(uint8_t a_event) {
 	// TODO implement me
 }
 
 
-static void menu_set_date(void *a_data, uint8_t a_event) {
+static void menu_set_date(uint8_t a_event) {
 	// TODO implement me
 }
 
 
-static void menu_reset_temperature(void *a_data, uint8_t a_event) {
+static void menu_reset_temperature(uint8_t a_event) {
 	// TODO implement me
 }
 
 
-static void menu_set_time_mode(void *a_data, uint8_t a_event) {
+static void menu_set_time_mode(uint8_t a_event) {
 	uint8_t data[2] = {DS1307_HOURS_ADDR};
 	const char *mode[] = {
 		"24 mode",
@@ -212,7 +212,7 @@ static void menu_set_time_mode(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_brightness(void *a_data, uint8_t a_event) {
+static void menu_set_lcd_brightness(uint8_t a_event) {
 	char pg[13] = {0x00};
 
 	switch (a_event) {
@@ -242,7 +242,7 @@ static void menu_set_lcd_brightness(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_contrast(void *a_data, uint8_t a_event) {
+static void menu_set_lcd_contrast(uint8_t a_event) {
 	char pg[13] = {0x00};
 
 	switch (a_event) {
@@ -272,7 +272,7 @@ static void menu_set_lcd_contrast(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_lcd_backlight(void *a_data, uint8_t a_event) {
+static void menu_set_lcd_backlight(uint8_t a_event) {
 	const char *backlight[] = {
 		"Always On",
 		"10 secs",
@@ -328,7 +328,7 @@ static void menu_set_lcd_backlight(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_temp_disp_time(void *a_data, uint8_t a_event) {
+static void menu_set_temp_disp_time(uint8_t a_event) {
 	uint8_t times[] = { 10, 15, 20, 30, 60, 90 };
 	static int8_t idx = -1;
 	
@@ -362,7 +362,7 @@ static void menu_set_temp_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_time_disp_time(void *a_data, uint8_t a_event) {
+static void menu_set_time_disp_time(uint8_t a_event) {
 	uint8_t times[] = { 10, 15, 20, 30, 60, 90 };
 	static int8_t idx = -1;
 	
@@ -397,7 +397,7 @@ static void menu_set_time_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_nameday_disp_time(void *a_data, uint8_t a_event) {
+static void menu_set_nameday_disp_time(uint8_t a_event) {
 	uint8_t times[] = { 10, 15, 20, 30, 60, 90 };
 	static int8_t idx = -1;
 	
@@ -431,7 +431,7 @@ static void menu_set_nameday_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_set_wow_disp_time(void *a_data, uint8_t a_event) {
+static void menu_set_wow_disp_time(uint8_t a_event) {
 	uint8_t times[] = { 10, 15, 20, 30, 60, 90 };
 	static int8_t idx = -1;
 	
@@ -465,7 +465,7 @@ static void menu_set_wow_disp_time(void *a_data, uint8_t a_event) {
 }
 
 
-static void menu_save_settings(void *a_data, uint8_t a_event) {
+static void menu_save_settings(uint8_t a_event) {
 	static uint8_t cnt = 30;
 
 	if (E_EVENT_BUTTON_OK == a_event) {
@@ -475,14 +475,11 @@ static void menu_save_settings(void *a_data, uint8_t a_event) {
 		return;
 	}
 
-	snprintf((char *)g_sys_ctx.display[1], 
-			LCD_CHARACTERS_PER_LINE + 1, 
-			" SETTINGS SAVED ");
-
+	sprintf((char *)g_sys_ctx.display[1], " SETTINGS SAVED ");
 	_delay_ms(100);
 	cnt--;
 
-	if (!cnt) {
+	if (!cnt--) {
 		// press OK :)
 		cnt = 30;
 		fsm_event_push(&g_sys_ctx.eq, E_EVENT_BUTTON_OK);

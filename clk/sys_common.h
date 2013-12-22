@@ -12,7 +12,7 @@
 /**
  * @brief setup system timers
  */
-void timers_setup();
+void timers_setup(void);
 
 /**
  * @brief initialize the RTC hardware and it's settings
@@ -37,10 +37,8 @@ void bus_twi_setup(struct twi_ctx **a_ctx);
 
 /**
  * @brief setup the GPIO for the "seconds" LED
- *
- * @param a_ctx system context
  */
-void led_setup(volatile struct sys_ctx *a_ctx);
+void led_setup(void);
 
 // ================================================================================
 
@@ -53,18 +51,18 @@ void sys_settings_get(struct sys_settings *a_ss);
 
 // ================================================================================
 
-void displayTemp(volatile struct sys_ctx *a_ctx);
-void displayTime(volatile struct sys_ctx *a_ctx);
-void displayNameday(volatile struct sys_ctx *a_ctx);
-void displayProverb(volatile struct sys_ctx *a_ctx);
-void displayMenu(volatile struct sys_ctx *a_ctx);
-void displayClean(volatile struct sys_ctx *a_ctx, uint8_t a_which);
+void displayTemp(void);
+void displayTime(void);
+void displayNameday(void);
+void displayProverb(void);
+void displayMenu(void);
+void displayClean(uint8_t a_which);
 
 // ================================================================================
 
 uint8_t is_leap_year(uint8_t a_year);
-uint16_t get_year_day(volatile struct sys_ctx *a_ctx);
-uint8_t get_display_offset(volatile struct sys_ctx *a_ctx, uint8_t line);
+uint16_t get_year_day(void);
+void blit(uint8_t which);
 
 // ================================================================================
 

@@ -10,9 +10,10 @@
 
 
 /**
- * @brief default magic identifier value
+ * @brief default magic identifier values
  */
 #define SETTINGS_MAGIC_ID 0x0d
+#define RTC_MAGIC_ID 0x0d
 
 
 /**
@@ -126,5 +127,12 @@ struct sys_ctx {
 	// display buffer
 	char display[LCD_NUMBER_OF_LINES][LCD_CHARACTERS_PER_LINE + 1];
 };
+
+
+/**
+ * @brief global definition of the GOD object
+ */
+extern volatile struct sys_ctx g_sys_ctx;
+
 
 #endif /* __SYS_CTX_H__ */

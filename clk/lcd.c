@@ -1,4 +1,5 @@
 #include "lcd.h"
+#include "sys_ctx.h"
 
 
 void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
@@ -22,4 +23,25 @@ void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
 	// initialize the device
 	hd44780_init(a_lcd_ctx);
 }
+
+
+void lcd_blit(uint8_t which) {
+
+	// TODO maybe think about some other method 
+	// not to block interrupts so often
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+		hd44780_goto((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
+				(which ? LCD_LINE01_ADDR : LCD_LINE00_ADDR));
+
+		hd44780_puts((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx,
+				(char *)g_sys_ctx.display[0]);
+
+		hd44780_goto((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
+				(which ? LCD_LINE11_ADDR : LCD_LINE10_ADDR));
+
+		hd44780_puts((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx,
+				(char *)g_sys_ctx.display[1]);
+	}
+}
+
 

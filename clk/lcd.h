@@ -13,5 +13,6 @@
 #define LCD_LINE11_ADDR 0x51
 
 void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx);
+void lcd_blit(uint8_t which);
 
 #endif /* __LCD_H__ */

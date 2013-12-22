@@ -4,6 +4,7 @@
 #include "proverb.h"
 #include "scroll_string.h"
 #include "menu.h"
+#include "main.h"
 
 #include <avr/eeprom.h>
 #include <avr/power.h>
@@ -45,12 +46,12 @@ void timers_setup() {
 }
 
 
-void led_setup(volatile struct sys_ctx *a_ctx) {
-	a_ctx->led.port = &RTC_LED_PORT;
-	a_ctx->led.pin = RTC_LED_PIN;
+void led_setup() {
+	g_sys_ctx.led.port = &RTC_LED_PORT;
+	g_sys_ctx.led.pin = RTC_LED_PIN;
 
-	GPIO_CONFIGURE_AS_OUTPUT(&a_ctx->led);
-	GPIO_SET_HIGH(&a_ctx->led);
+	GPIO_CONFIGURE_AS_OUTPUT(&g_sys_ctx.led);
+	GPIO_SET_HIGH(&g_sys_ctx.led);
 }
 
 
@@ -128,7 +129,7 @@ void sys_settings_get(struct sys_settings *a_ss) {
 }
 
 
-void displayTime(volatile struct sys_ctx *a_ctx) {
+void displayTime() {
 
 	const char *weekdays[] = {
 		"Monday",
@@ -139,7 +140,7 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 		"Saturday",
 		"Sunday"
 	};
-	uint8_t x = a_ctx->tm.dow ? a_ctx->tm.dow - 1 : 0x00;
+	uint8_t x = g_sys_ctx.tm.dow ? g_sys_ctx.tm.dow - 1 : 0x00;
 	char output[5] = {0x00};
 	uint8_t len = sizeof(output);
 	static struct scroll_str str = {0x00};
@@ -152,60 +153,46 @@ void displayTime(volatile struct sys_ctx *a_ctx) {
 	str.len = strlen(weekdays[x]);
 
 	// get a string slice
-	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
+	scroll_str_paste(&str, output, sizeof(output) - 1, g_sys_ctx._fast_counter);
 
-	if (a_ctx->tm.mode_ampm_hour & 0x40) {
+	if (g_sys_ctx.tm.mode_ampm_hour & 0x40) {
 		// 12 hour mode
-		snprintf((char *)a_ctx->display[0], 
+		snprintf((char *)g_sys_ctx.display[0], 
 				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %-7s",
-				a_ctx->tm.mode_ampm_hour & 0x1f,
-				a_ctx->tm.min,
-				a_ctx->tm.ch_sec & 0x7f,
-				a_ctx->tm.mode_ampm_hour & 0x20 ? "PM" : "AM");
+				g_sys_ctx.tm.mode_ampm_hour & 0x1f,
+				g_sys_ctx.tm.min,
+				g_sys_ctx.tm.ch_sec & 0x7f,
+				g_sys_ctx.tm.mode_ampm_hour & 0x20 ? "PM" : "AM");
 	}
 	else {
-		snprintf((char *)a_ctx->display[0], 
+		snprintf((char *)g_sys_ctx.display[0], 
 				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %7s",
-				a_ctx->tm.mode_ampm_hour & 0x3f,
-				a_ctx->tm.min,
-				a_ctx->tm.ch_sec & 0x7f,
+				g_sys_ctx.tm.mode_ampm_hour & 0x3f,
+				g_sys_ctx.tm.min,
+				g_sys_ctx.tm.ch_sec & 0x7f,
 				" ");
 	}
 
-	snprintf((char *)a_ctx->display[1], 
+	snprintf((char *)g_sys_ctx.display[1], 
 			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x, %4s",
-			BCD2BIN(a_ctx->tm.year) + 2000,
-			a_ctx->tm.month,
-			a_ctx->tm.dom,
+			BCD2BIN(g_sys_ctx.tm.year) + 2000,
+			g_sys_ctx.tm.month,
+			g_sys_ctx.tm.dom,
 			output); 
 
-	// TODO maybe think about some other method 
-	// not to block interrupts so often
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE00_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE10_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
-	}
+	lcd_blit(0);
 }
 
 
-void displayTemp(volatile struct sys_ctx *a_ctx) {
-	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Current: %2.02f\xdf%c",
-			((float)a_ctx->temp_ctx.temp)/16, 'C'); 
+void displayTemp() {
+	snprintf((char *)g_sys_ctx.display[0], LCD_CHARACTERS_PER_LINE + 1, "Current: %2.02f\xdf%c",
+			((float)g_sys_ctx.temp_ctx.temp)/16, 'C'); 
 
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "-/+ %2.02f %2.02f ",
-			((float)a_ctx->temp_ctx.temp_min)/16,
-			((float)a_ctx->temp_ctx.temp_max)/16); 
+	snprintf((char *)g_sys_ctx.display[1], LCD_CHARACTERS_PER_LINE + 1, "-/+ %2.02f %2.02f ",
+			((float)g_sys_ctx.temp_ctx.temp_min)/16,
+			((float)g_sys_ctx.temp_ctx.temp_max)/16); 
 
-	// TODO maybe think about some other method 
-	// not to block interrupts so often
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
-	}
+	lcd_blit(1);
 }
 
 
@@ -215,30 +202,30 @@ uint8_t is_leap_year(uint8_t a_year) {
 }
 
 
-uint16_t get_year_day(volatile struct sys_ctx *a_ctx) {
+uint16_t get_year_day() {
 	uint16_t day = 0;
 	uint8_t mon[] = {
 		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 	};
 
-	if (is_leap_year(a_ctx->tm.year)) {
+	if (is_leap_year(g_sys_ctx.tm.year)) {
 		mon[1] = 29;
 	}
 
-	for (int8_t i = (a_ctx->tm.month - 1); i>0; i--) {
+	for (int8_t i = (g_sys_ctx.tm.month - 1); i>0; i--) {
 		day += mon[i - 1];
 	}
 
-	day += a_ctx->tm.dom;
+	day += g_sys_ctx.tm.dom;
 	return day;
 }
 
 
-void displayNameday(volatile struct sys_ctx *a_ctx) {
+void displayNameday() {
 	char ss_mem[40] = "";
 	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
 	static struct scroll_str str = {0x00};
-	uint16_t yd = get_year_day(a_ctx) - 1;
+	uint16_t yd = get_year_day() - 1;
 
 	if (!str.s) {
 		scroll_str_init(&str, ss_mem, 0);
@@ -246,7 +233,7 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 
 	// make an index correction for non leap years
 	// since the FLASH table includes the leap year name-day as well
-	if (!is_leap_year(a_ctx->tm.year) && yd >= 59) { // first of march
+	if (!is_leap_year(g_sys_ctx.tm.year) && yd >= 59) { // first of march
 		// increment the index to ommit the leap year extra day
 		yd++;		
 	}
@@ -258,25 +245,20 @@ void displayNameday(volatile struct sys_ctx *a_ctx) {
 	str.len = strlen(ss_mem);
 
 	// get a string slice
-	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
+	scroll_str_paste(&str, output, sizeof(output) - 1, g_sys_ctx._fast_counter);
 
-	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
+	snprintf((char *)g_sys_ctx.display[0], LCD_CHARACTERS_PER_LINE + 1, "Nameday:        ");
+	snprintf((char *)g_sys_ctx.display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
-	}
+	lcd_blit(1);
 }
 
 
-void displayProverb(volatile struct sys_ctx *a_ctx) {
+void displayProverb() {
 	char ss_mem[128] = "";
 	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
 	static struct scroll_str str = {0x00};
-	uint16_t yd = get_year_day(a_ctx) - 1;
+	uint16_t yd = get_year_day() - 1;
 
 	if (!str.s) {
 		scroll_str_init(&str, ss_mem, 0);
@@ -292,56 +274,23 @@ void displayProverb(volatile struct sys_ctx *a_ctx) {
 	str.len = strlen(ss_mem);
 
 	// get a string slice
-	scroll_str_paste(&str, output, sizeof(output) - 1, a_ctx->_fast_counter);
+	scroll_str_paste(&str, output, sizeof(output) - 1, g_sys_ctx._fast_counter);
 
-	snprintf((char *)a_ctx->display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom:");
-	snprintf((char *)a_ctx->display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
+	snprintf((char *)g_sys_ctx.display[0], LCD_CHARACTERS_PER_LINE + 1, "Words of Wisdom:");
+	snprintf((char *)g_sys_ctx.display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE01_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, LCD_LINE11_ADDR);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
-	}
+	lcd_blit(1);
 }
 
 
-uint8_t get_display_offset(volatile struct sys_ctx *a_ctx, uint8_t line) {
-	// determine the render position
-	return (line ? 
-		(a_ctx->_vis_pos ? LCD_LINE11_ADDR : LCD_LINE10_ADDR) :
-		(a_ctx->_vis_pos ? LCD_LINE01_ADDR : LCD_LINE00_ADDR));
+void displayMenu() {
+	menu_render(g_sys_ctx.menu);
+	lcd_blit(g_sys_ctx._vis_pos);
 }
 
 
-void displayMenu(volatile struct sys_ctx *a_ctx) {
-	uint8_t p[2] = {0x00};
-	p[0] = get_display_offset(a_ctx, 0);
-	p[1] = get_display_offset(a_ctx, 1);
-
-	menu_render(a_ctx->menu);
-	
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[0]);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[1]);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[1]);
-	}
-}
-
-
-void displayClean(volatile struct sys_ctx *a_ctx, uint8_t a_which) {
-	uint8_t p[2] = {0x00};
-
-	sprintf((char *)a_ctx->display[0],"%16s", " ");
-
-	p[0] = a_which ? LCD_LINE01_ADDR : LCD_LINE00_ADDR;
-	p[1] = a_which ? LCD_LINE11_ADDR : LCD_LINE10_ADDR;
-
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[0]);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-		hd44780_goto((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx, p[1]);
-		hd44780_puts((struct dev_hd44780_ctx *)&a_ctx->lcd_ctx,(char *)a_ctx->display[0]);
-	}
+void displayClean(uint8_t a_which) {
+	sprintf((char *)g_sys_ctx.display[0],"%16s", " ");
+	sprintf((char *)g_sys_ctx.display[1],"%16s", " ");
+	lcd_blit(a_which);
 }

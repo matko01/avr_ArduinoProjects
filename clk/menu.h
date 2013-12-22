@@ -25,7 +25,7 @@
 /**
  * @brief callback type definition
  */
-typedef void (*menu_callback_t)(void*, uint8_t);
+typedef void (*menu_callback_t)(uint8_t);
 
 
 /// config flag definitions
@@ -50,9 +50,6 @@ struct menu_item {
 	// 1 - inactive/active
 	// 0 - cb/submenu
 	uint8_t config;
-
-	// private data
-	void *pd;
 
 	union {
 		menu_callback_t cb;

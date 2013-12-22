@@ -17,7 +17,6 @@
  */
 volatile struct sys_ctx g_sys_ctx;
 
-
 /**
  * @brief menu definition
  */
@@ -43,7 +42,7 @@ void main(void) {
 	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
 
 	// setup the LED
-	led_setup(&g_sys_ctx);
+	led_setup();
 
 	// setup the display	
 	lcd_setup((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx);
@@ -102,7 +101,7 @@ void main(void) {
 		}
 
 		// execute the state machine
-		g_sys_ctx.fsm.cs = g_sys_ctx.fsm.cs.cb(&g_sys_ctx, event);
+		g_sys_ctx.fsm.cs = g_sys_ctx.fsm.cs.cb(event);
 
 		// if button pressed
 		if (g_sys_ctx.buttons) {
