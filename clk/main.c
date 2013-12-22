@@ -17,6 +17,7 @@
  */
 volatile struct sys_ctx g_sys_ctx;
 
+
 /**
  * @brief menu definition
  */
@@ -25,6 +26,9 @@ extern struct menu g_main_menu;
 
 void main(void) {
 
+	/**
+	 * @brief sys_ctx size
+	 */
 	uint8_t size = sizeof(struct sys_ctx);
 
 	// initialize the global context
@@ -42,7 +46,7 @@ void main(void) {
 	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
 
 	// setup the LED
-	led_setup();
+	led_setup(&g_sys_ctx.led);
 
 	// setup the display	
 	lcd_setup((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx);

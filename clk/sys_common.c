@@ -46,12 +46,12 @@ void timers_setup() {
 }
 
 
-void led_setup() {
-	g_sys_ctx.led.port = &RTC_LED_PORT;
-	g_sys_ctx.led.pin = RTC_LED_PIN;
+void led_setup(gpio_pin *led) {
+	led->port = &RTC_LED_PORT;
+	led->pin = RTC_LED_PIN;
 
-	GPIO_CONFIGURE_AS_OUTPUT(&g_sys_ctx.led);
-	GPIO_SET_HIGH(&g_sys_ctx.led);
+	GPIO_CONFIGURE_AS_OUTPUT(led);
+	GPIO_SET_HIGH(led);
 }
 
 

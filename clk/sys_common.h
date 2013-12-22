@@ -38,7 +38,7 @@ void bus_twi_setup(struct twi_ctx **a_ctx);
 /**
  * @brief setup the GPIO for the "seconds" LED
  */
-void led_setup(void);
+void led_setup(gpio_pin *led);
 
 // ================================================================================
 

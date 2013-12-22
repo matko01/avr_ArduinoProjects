@@ -7,6 +7,12 @@
 // integrated value of the buttons pressed
 static volatile uint8_t gs_btn_integration[E_BUTTON_LAST] = {0x00};
 
+/**
+ * @brief global definition of the GOD object
+ */
+extern volatile struct sys_ctx g_sys_ctx;
+
+
 #define DEBOUNCE_TIME 0.065
 #define DEBOUNCE_SAMPLING_FREQUENCY 61
 #define DEBOUNCE_MAXIMUM_PERIOD (DEBOUNCE_TIME * DEBOUNCE_SAMPLING_FREQUENCY)

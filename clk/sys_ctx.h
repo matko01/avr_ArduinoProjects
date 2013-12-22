@@ -129,10 +129,4 @@ struct sys_ctx {
 };
 
 
-/**
- * @brief global definition of the GOD object
- */
-extern volatile struct sys_ctx g_sys_ctx;
-
-
 #endif /* __SYS_CTX_H__ */
