@@ -1,18 +1,24 @@
-#include "temperature.h"
-#include "main.h"
-#include <avr/interrupt.h>
-#include "sys_ctx.h"
+#include "buttons.h"
+#include "int_ctx.h"
 #include "fsm.h"
+#include "temperature.h"
+#include "lcd.h"
+
+#include <avr/interrupt.h>
+#include <stdint.h>
+
 
 // integrated value of the buttons pressed
 static volatile uint8_t gs_btn_integration[E_BUTTON_LAST] = {0x00};
 
+
 /**
- * @brief global definition of the GOD object
+ * @brief definition of global variable
  */
-extern volatile struct sys_ctx g_sys_ctx;
+volatile struct int_ctx g_int_ctx = {0x00};
 
 
+// button debounce integration algorithm parameters
 #define DEBOUNCE_TIME 0.065
 #define DEBOUNCE_SAMPLING_FREQUENCY 61
 #define DEBOUNCE_MAXIMUM_PERIOD (DEBOUNCE_TIME * DEBOUNCE_SAMPLING_FREQUENCY)
@@ -24,44 +30,18 @@ extern volatile struct sys_ctx g_sys_ctx;
  * @param TIMER0_OVF_vect
  */
 ISR(TIMER0_OVF_vect) {
+	// buttons
+	volatile uint8_t buttons = buttons_get();
 
 	// handle temperature measurements
-	tmp_update_tv(&g_sys_ctx.temp_ctx);
+	tmp_update_tv(&g_int_ctx.tmp->msr);
 
-	// fade in / fade out
-	if (g_sys_ctx._lcd_backlight_timer || 0 == g_sys_ctx.settings.lcd_bt_time) {
-		if (OCR2A < g_sys_ctx.settings.lcd_brightness) 
-			++OCR2A;
-	}
-	else {
-		if (OCR2A) OCR2A--;
-	}
+	// update the back-light
+	lcd_update_backlight(g_int_ctx.lcd);
 
-	if (g_sys_ctx._vis_pos != g_sys_ctx._cur_pos) {
+	// update the lcd transition counters
+	lcd_update_transition(g_int_ctx.lcd, g_int_ctx.eq);
 
-		// screen shift animation
-		if (g_sys_ctx._vis_pos > g_sys_ctx._cur_pos) {
-			if (0 == (g_sys_ctx._cur_pos++%8))
-				// scroll left <--
-				hd44780_write((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
-						HD44780_CMD_CD_SHIFT(1, 0), 0);
-		}
-		else if (g_sys_ctx._vis_pos < g_sys_ctx._cur_pos) {
-			// scroll right -->
-			if (!(g_sys_ctx._cur_pos--%8))
-				hd44780_write((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx, 
-						HD44780_CMD_CD_SHIFT(1, 1), 0);
-		}
-		
-		if (g_sys_ctx._vis_pos == g_sys_ctx._cur_pos) {
-			// the transition has ended
-			fsm_event_push(&g_sys_ctx.eq, E_EVENT_TRANSITION_END);
-		}
-	}
-
-	// fast counter increment
-	// will overflow every ~16.5 minutes
-	g_sys_ctx._fast_counter++;
 
 	// button debounsing procedure
 	for (volatile uint8_t i = 0; i<E_BUTTON_LAST; i++) {
@@ -76,13 +56,21 @@ ISR(TIMER0_OVF_vect) {
 
 		// the logic here is inverted since low state means button pressed
 		if (gs_btn_integration[i] >= DEBOUNCE_MAXIMUM_PERIOD) {
-			g_sys_ctx.buttons &= ~_BV(i);
+			buttons &= ~_BV(i);
 		}
 		else if (gs_btn_integration[i]) {
-			g_sys_ctx.buttons |= _BV(i);
+			buttons |= _BV(i);
 		}
 	} // for
+
+	buttons_set(buttons);
+
+	// fast counter increment
+	// will overflow every ~16.5 minutes
+	g_int_ctx._fast_counter++;
+
 }
+
 
 
 /**
@@ -94,22 +82,22 @@ ISR(TIMER0_OVF_vect) {
  */
 ISR(INT0_vect) {
 
-	// trigger temperature measurement
-	tmp_trigger_measurement(&g_sys_ctx.temp_ctx,
-			(struct soft_ow *)&g_sys_ctx.sow_ctx);
-
-	g_sys_ctx._time_trigger = 1;
+	//  every 1 Hz event generation
+	fsm_event_push(g_int_ctx.eq, E_EVENT_1HZ);
 
 	// toggle the LED
-	GPIO_TOGGLE(&g_sys_ctx.led);
+	GPIO_TOGGLE(g_int_ctx.led);
 
-	// decrement the back light timer
-	if (g_sys_ctx._lcd_backlight_timer) 
-		g_sys_ctx._lcd_backlight_timer--;
+	// trigger temperature measurement
+	tmp_trigger_measurement(g_int_ctx.tmp);
 
-	if (g_sys_ctx._event_timer) {
-		if (!--g_sys_ctx._event_timer) {
-			fsm_event_push(&g_sys_ctx.eq, E_EVENT_TO);
+	// generate the time out event
+	if (g_int_ctx._event_timer) {
+		if (!--g_int_ctx._event_timer) {
+			fsm_event_push(g_int_ctx.eq, E_EVENT_TO);
 		}
 	}
+
+	// update the back light timer
+	lcd_update_backlight_timer(g_int_ctx.lcd);
 }

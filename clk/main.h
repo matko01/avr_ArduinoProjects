@@ -1,8 +1,16 @@
-#ifndef MAIN_H_6OSZU1UF
-#define MAIN_H_6OSZU1UF
+#ifndef __MAIN_H__
+#define __MAIN_H__
+
+#include "sys_setup.h"
+#include "lcd.h"
+#include "sys_settings.h"
+#include "rtc.h"
+#include "fsm.h"
+#include "fsm_private_data.h"
+#include "temperature.h"
+#include "buttons.h"
 
 
 void main(void) __attribute__ ((noreturn));
 
-#endif /* end of include guard: MAIN_H_6OSZU1UF */
-
+#endif /* __MAIN_H__ */

@@ -18,11 +18,17 @@ struct scroll_str {
 
 
 struct blink_str {
-	char *str;
+	// replacement character
 	char replace;
+	// length of the string
 	uint8_t len;
+	// timestamp marker
 	uint16_t marker;
+	// flag
 	uint8_t _f;
+
+	// the string itself
+	char *str;
 };
 
 

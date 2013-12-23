@@ -1,14 +1,19 @@
 TARGET=clk
 SOURCES= \
-		 sys_common.c \
-		 string_util.c \
+		 sys_setup.c \
+		 sys_util.c \
+		 menu.c \
+		 sys_settings.c \
+		 sys_display.c \
+		 buttons.c \
 		 interrupts.c \
-		 temperature.c \
-		 fsm.c \
-		 lcd.c \
 		 namedays.c \
 		 proverb.c \
-		 menu.c \
+		 temperature.c \
+		 string_util.c \
+		 fsm.c \
+		 rtc.c \
+		 lcd.c \
 		 main.c
 
 DEPS=

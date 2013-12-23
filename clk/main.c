@@ -1,125 +1,115 @@
 #include "pca.h"
 #include "main.h"
-#include "sys_ctx.h"
-
-#include "sys_conf.h"
-#include "sys_common.h"
-#include "lcd.h"
-
-#include <util/delay.h>
-#include <avr/interrupt.h>
-
-#include "fsm.h"
-
-
-/**
- * @brief global system context
- */
-volatile struct sys_ctx g_sys_ctx;
-
-
-/**
- * @brief menu definition
- */
-extern struct menu g_main_menu;
+#include "int_ctx.h"
 
 
 void main(void) {
+	// one wire bus
+	volatile struct soft_ow sow_ctx = {0x00};
 
-	/**
-	 * @brief sys_ctx size
-	 */
-	uint8_t size = sizeof(struct sys_ctx);
+	// TWI interface
+	volatile struct twi_ctx *twi_ctx = NULL;
 
-	// initialize the global context
-	common_zero_mem(&g_sys_ctx, size);
-	SET_CONTRAST(0x00);
-	SET_BRIGHTNESS(0x00);
+	// led pin
+	volatile gpio_pin led_pin = {0x00};
 
-	// attach the main menu
-	g_sys_ctx.menu = &g_main_menu;
+	// lcd display
+	volatile struct lcd_ctx lcd_ctx = {0x00};
 
-	// setup state machine
-	fsm_init((struct fsm_t *)&g_sys_ctx.fsm);
-	
+	// system settings
+	struct sys_settings settings = {0x00};
+
+	// time
+	struct time_ctx tm = {{0x00}};
+
+	// temp
+	struct temp_ctx temp = {{0x00}};
+
+	// main state machine
+	struct fsm_t fsm = {{0x00}};
+	struct fsm_pd fsmpd = {0x00};
+
 	// get system settings from eeprom
-	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
-
-	// setup the LED
-	led_setup((gpio_pin *)&g_sys_ctx.led);
-
-	// setup the display	
-	lcd_setup((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx);
+	sys_settings_get(&settings);
 
 	// setup buses
-	bus_twi_setup((struct twi_ctx **)&g_sys_ctx.twi_ctx);
-	bus_ow_setup((struct soft_ow *)&g_sys_ctx.sow_ctx);
+	bus_twi_setup((struct twi_ctx **)&twi_ctx);
+	bus_ow_setup((struct soft_ow *)&sow_ctx);
+
+	// setup the LED
+	led_setup((gpio_pin *)&led_pin);
+
+	// setup the display	
+	lcd_setup((struct dev_hd44780_ctx *)&lcd_ctx.dev);
+	lcd_ctx.settings = &settings;
 
 	// setup clock
-	rtc_setup(g_sys_ctx.twi_ctx);
+	rtc_setup(twi_ctx);
 
 	// disable interrupts temporary & 
 	// continue with HW init
 	cli();
-	tmp_setup(&g_sys_ctx.temp_ctx, (struct soft_ow *)&g_sys_ctx.sow_ctx);
 	timers_setup();
+	temp.sow_ctx = &sow_ctx;
+	tmp_setup(&temp);
 
-	// initialize the FSM
-	// initial state = 0 (TIME)	
-	g_sys_ctx._event_timer = g_sys_ctx.settings.time_time;
+	fsmpd.tm = &tm;
+	fsmpd.temp = &temp;
+	fsmpd.lcd = &lcd_ctx;
+	fsmpd.ss = &settings;
+
+	fsm_init(&fsm, &fsmpd);
+	g_int_ctx._event_timer = settings.time_time;
+	
+
+	// event queue pointer for the interrupts
+	g_int_ctx.eq = &fsm.eq;
 
 	// now it's safe to globally enable ints
 	// HW should be up & running
 	sei();
 
 	// restore saved contrast value
-	SET_CONTRAST(g_sys_ctx.settings.lcd_contrast);
-
-	serial_init(E_BAUD_9600);	
-	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
-	serial_flush();
-	serial_install_stdio();
+	SET_CONTRAST(settings.lcd_contrast);
 
 	// execution loop
 	for (;;) {
 		// pop an event
-		uint8_t event = fsm_event_pop(&g_sys_ctx.eq);
+		uint8_t event = fsm_event_pop(&fsm.eq);
+		uint8_t buttons = 0;		
 
 		// perform temperature measurement
-		tmp_update_measurements(&g_sys_ctx.temp_ctx,
-				&g_sys_ctx.sow_ctx);
+		tmp_update_measurements(&temp);
 
-		// update time measurement
-		if (g_sys_ctx._time_trigger) {
+		// update measurement on interrupt
+		if (E_EVENT_1HZ == event) {
 			uint8_t ptr = 0x00;
 
 			twi_mtx(TWI_RTC_ADDR, &ptr, 0x01, 0x00);
-			while (g_sys_ctx.twi_ctx->status & E_TWI_BIT_BUSY);
+			while (twi_ctx->status & E_TWI_BIT_BUSY);
 
-			twi_mrx(TWI_RTC_ADDR, (uint8_t *)&g_sys_ctx.tm, 
-					sizeof(g_sys_ctx.tm), 
+			twi_mrx(TWI_RTC_ADDR, (uint8_t *)&tm.tm, 
+					sizeof(tm.tm), 
 					E_TWI_BIT_SEND_STOP);
-			while (g_sys_ctx.twi_ctx->status & E_TWI_BIT_BUSY);
-
-			g_sys_ctx._time_trigger = 0;
+			while (twi_ctx->status & E_TWI_BIT_BUSY);
+			continue;
 		}
 
 		// execute the state machine
-		g_sys_ctx.fsm.cs = g_sys_ctx.fsm.cs.cb(event);
+		fsm.cs = fsm.cs.cb(&fsm, event);
 
 		// if button pressed
-		if (g_sys_ctx.buttons) {
+		if ((buttons = buttons_get())) {
+
 			// refresh the timer
-			g_sys_ctx._lcd_backlight_timer = g_sys_ctx.settings.lcd_bt_time;
+			lcd_ctx._lcd_backlight_timer = settings.lcd_bt_time;
 
 			// push a key-press event
-			fsm_event_push(&g_sys_ctx.eq, 0x10 + g_sys_ctx.buttons);
+			fsm_event_push(&fsm.eq, 0x10 + buttons);
 		}
 
 		// poll every 10 ms (or even longer
 		// when considering the processing time)
 		_delay_ms(10);
 	} // for
-
-} // main
-
+}

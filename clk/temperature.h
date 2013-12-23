@@ -25,18 +25,29 @@ typedef enum _temp_msr_state_t {
  * @brief temperature measurement ctx
  */
 struct temp_msr_ctx {
+	// time interval
 	volatile uint16_t tv;
+
+	// temperature measurement fsm state
 	volatile uint8_t state;
-	volatile uint16_t temp;
+
+	// measurements
+	volatile uint16_t temp;	
 	volatile uint16_t temp_max;
 	volatile uint16_t temp_min;
 };
 
 
-uint8_t tmp_setup(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
+struct temp_ctx {
+	struct temp_msr_ctx msr;
+	volatile struct soft_ow *sow_ctx;
+};
+
+
+uint8_t tmp_setup(volatile struct temp_ctx *a_ctx);
 void tmp_update_tv(volatile struct temp_msr_ctx *a_ctx);
-void tmp_update_measurements(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
-void tmp_trigger_measurement(volatile struct temp_msr_ctx *a_ctx, volatile struct soft_ow *a_bus);
+void tmp_update_measurements(volatile struct temp_ctx *a_ctx);
+void tmp_trigger_measurement(volatile struct temp_ctx *a_ctx);
 
 
 #endif /* TMP_CTX_H_INZKGQ4V */
