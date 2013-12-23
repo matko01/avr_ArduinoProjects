@@ -2,32 +2,41 @@
 #include "main.h"
 #include "int_ctx.h"
 
+#include <string.h>
 
 void main(void) {
 	// one wire bus
 	volatile struct soft_ow sow_ctx;
+	memset(&sow_ctx, 0x00, sizeof(struct soft_ow));
 
 	// TWI interface
 	volatile struct twi_ctx *twi_ctx = NULL;
 
 	// led pin
 	volatile gpio_pin led_pin;
+	memset(&led_pin, 0x00, sizeof(gpio_pin));
 
 	// lcd display
-	volatile struct lcd_ctx lcd_ctx = {0x00};
+	volatile struct lcd_ctx lcd_ctx;
+	memset(&lcd_ctx, 0x00, sizeof(struct lcd_ctx));
 
 	// system settings	
-	volatile struct sys_settings settings = {0x00};
+	volatile struct sys_settings settings;
+	memset(&settings, 0x00, sizeof(struct sys_settings));
 
 	// time
 	struct time_ctx tm = {{0x00}};
+	memset(&tm, 0x00, sizeof(struct time_ctx));
 
 	// temp
 	volatile struct temp_ctx temp = {{0x00}};
+	memset(&temp, 0x00, sizeof(struct temp_ctx));
 
 	// main state machine
-	struct fsm_t fsm = {{0x00}};
-	struct fsm_pd fsmpd = {0x00};
+	struct fsm_t fsm;
+	struct fsm_pd fsmpd;
+	memset(&fsm, 0x00, sizeof(struct fsm_t));
+	memset(&fsmpd, 0x00, sizeof(struct fsm_pd));
 
 	// get system settings from eeprom
 	sys_settings_get(&settings);
@@ -53,6 +62,7 @@ void main(void) {
 	timers_setup();
 	temp.sow_ctx = &sow_ctx;
 	tmp_setup(&temp);
+	tm.twi = twi_ctx;
 
 	fsmpd.tm = &tm;
 	fsmpd.temp = &temp;

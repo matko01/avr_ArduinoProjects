@@ -47,30 +47,28 @@ void menu_render(struct lcd_ctx *a_lcd, struct menu *a_menu) {
 		// ... and the function itself
 		if (!(a_menu->_is->config & MENU_ITEM_SUBMENU)) 
 			a_menu->_is->ptr.cb(a_menu->_pd, E_EVENT_NONE);
-
-		return;
 	}
+	else {
+		// render items
+		for (uint8_t i = 0; i<2; i++) {
+			const char *istr = a_menu->items[(i + so) % a_menu->cnt].name;
 
+			if (i + so == a_menu->_cursor) {
+				if (str.s != istr) str.pos = 0;
+				str.s = (char *)istr;
+				str.len = strlen(istr);
 
-	// render items
-	for (uint8_t i = 0; i<2; i++) {
-		const char *istr = a_menu->items[(i + so) % a_menu->cnt].name;
-		
-		if (i + so == a_menu->_cursor) {
-			if (str.s != istr) str.pos = 0;
-			str.s = (char *)istr;
-			str.len = strlen(istr);
+				// get a string slice
+				scroll_str_paste(&str, output, sizeof(output) - 1, g_int_ctx._fast_counter);
+			}
 
-			// get a string slice
-			scroll_str_paste(&str, output, sizeof(output) - 1, g_int_ctx._fast_counter);
+			// render an item
+			snprintf((char *)a_lcd->display[i], 
+					LCD_CHARACTERS_PER_LINE + 1, 
+					"%c%-15s",
+					i + so == a_menu->_cursor ? '>' : ' ',
+					i + so == a_menu->_cursor ? output : istr);
 		}
-
-		// render an item
-		snprintf((char *)a_lcd->display[i], 
-				LCD_CHARACTERS_PER_LINE + 1, 
-				"%c%-15s",
-				i + so == a_menu->_cursor ? '>' : ' ',
-			   	i + so == a_menu->_cursor ? output : istr);
 	}
 
 	lcd_blit((struct lcd_ctx *)a_lcd, a_lcd->_vis_pos);
