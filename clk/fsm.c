@@ -106,10 +106,9 @@ f_state fsm_state_disp_temp(struct fsm_t *a_fsm, uint8_t ev) {
 			break;
 
 		case E_EVENT_BUTTON_MENU:
-			lcd_clean((struct lcd_ctx *)pd->lcd, 1);
-			pd->lcd->_vis_pos = 0;
-
 			state.cb = fsm_state_scroll_menu;
+			lcd_clean((struct lcd_ctx *)pd->lcd, 0);
+			pd->lcd->_vis_pos = 0;
 			a_fsm->ps.cb = fsm_state_disp_temp;
 			break;
 	}

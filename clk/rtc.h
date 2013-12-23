@@ -2,6 +2,8 @@
 #define __RTC_H__
 
 #include "pca.h"
+#include "temperature.h"
+
 #include <stdint.h>
 
 
@@ -14,7 +16,7 @@
 struct time_ctx {
 	// time
 	ds1307_time_t tm;
-	struct twi_ctx *twi;
+	volatile struct twi_ctx *twi;
 };
 
 
@@ -24,6 +26,8 @@ struct time_ctx {
  * @param a_ctx system context
  */
 void rtc_setup(volatile struct twi_ctx *a_ctx);
+void rtc_store_temperatures(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr_ctx);
+void rtc_restore_temperatures(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr_ctx);
 
 
 #endif /* __RTC_H__ */

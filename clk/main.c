@@ -7,36 +7,36 @@
 void main(void) {
 	// one wire bus
 	volatile struct soft_ow sow_ctx;
-	memset(&sow_ctx, 0x00, sizeof(struct soft_ow));
+	memset((void *)&sow_ctx, 0x00, sizeof(struct soft_ow));
 
 	// TWI interface
 	volatile struct twi_ctx *twi_ctx = NULL;
 
 	// led pin
 	volatile gpio_pin led_pin;
-	memset(&led_pin, 0x00, sizeof(gpio_pin));
+	memset((void *)&led_pin, 0x00, sizeof(gpio_pin));
 
 	// lcd display
 	volatile struct lcd_ctx lcd_ctx;
-	memset(&lcd_ctx, 0x00, sizeof(struct lcd_ctx));
+	memset((void *)&lcd_ctx, 0x00, sizeof(struct lcd_ctx));
 
 	// system settings	
 	volatile struct sys_settings settings;
-	memset(&settings, 0x00, sizeof(struct sys_settings));
+	memset((void *)&settings, 0x00, sizeof(struct sys_settings));
 
 	// time
 	struct time_ctx tm = {{0x00}};
-	memset(&tm, 0x00, sizeof(struct time_ctx));
+	memset((void *)&tm, 0x00, sizeof(struct time_ctx));
 
 	// temp
 	volatile struct temp_ctx temp = {{0x00}};
-	memset(&temp, 0x00, sizeof(struct temp_ctx));
+	memset((void *)&temp, 0x00, sizeof(struct temp_ctx));
 
 	// main state machine
 	struct fsm_t fsm;
 	struct fsm_pd fsmpd;
-	memset(&fsm, 0x00, sizeof(struct fsm_t));
-	memset(&fsmpd, 0x00, sizeof(struct fsm_pd));
+	memset((void *)&fsm, 0x00, sizeof(struct fsm_t));
+	memset((void *)&fsmpd, 0x00, sizeof(struct fsm_pd));
 
 	// get system settings from eeprom
 	sys_settings_get(&settings);
