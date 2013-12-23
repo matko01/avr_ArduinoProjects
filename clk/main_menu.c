@@ -21,18 +21,18 @@ static void menu_save_settings(void*,uint8_t);
 /* ================================================================================ */
 
 static struct menu_item items[] = {
-	{ "Set Time", 					MENU_ITEM_DEFAULT, { menu_set_time } }, 
-	{ "Set Date", 					MENU_ITEM_DEFAULT, { menu_set_date } }, 
-	{ "Time Mode", 					MENU_ITEM_DEFAULT, { menu_set_time_mode } }, 
-	{ "LCD Brightness", 			MENU_ITEM_DEFAULT, { menu_set_lcd_brightness } }, 
-	{ "LCD Contrast", 				MENU_ITEM_DEFAULT, { menu_set_lcd_contrast } },
-	{ "LCD Backlight Time", 		MENU_ITEM_DEFAULT, { menu_set_lcd_backlight } }, 
-	{ "Reset temperature", 			MENU_ITEM_DEFAULT, { menu_reset_temperature } },
-	{ "Temperature Display Time", 	MENU_ITEM_DEFAULT, { menu_set_temp_disp_time } },
-	{ "Time Display Time", 			MENU_ITEM_DEFAULT, { menu_set_time_disp_time } },
-	{ "Nameday Display Time", 		MENU_ITEM_DEFAULT, { menu_set_nameday_disp_time } },
-	{ "WoW Display Time", 			MENU_ITEM_DEFAULT, { menu_set_wow_disp_time } },
-	{ "Save Settings to EEPROM", 	MENU_ITEM_DEFAULT, { menu_save_settings } }
+	{ "Set Time", 						MENU_ITEM_DEFAULT, { menu_set_time } }, 
+	{ "Set Date", 						MENU_ITEM_DEFAULT, { menu_set_date } }, 
+	{ "Time Mode", 						MENU_ITEM_DEFAULT, { menu_set_time_mode } }, 
+	{ "LCD Brightness", 				MENU_ITEM_DEFAULT, { menu_set_lcd_brightness } }, 
+	{ "LCD Contrast", 					MENU_ITEM_DEFAULT, { menu_set_lcd_contrast } },
+	{ "LCD Backlight Time", 			MENU_ITEM_DEFAULT, { menu_set_lcd_backlight } }, 
+	{ "Reset temperature", 				MENU_ITEM_DEFAULT, { menu_reset_temperature } },
+	{ "Temperature Display Time", 		MENU_ITEM_DEFAULT, { menu_set_temp_disp_time } },
+	{ "Time Display Time", 				MENU_ITEM_DEFAULT, { menu_set_time_disp_time } },
+	{ "Nameday Display Time", 			MENU_ITEM_DEFAULT, { menu_set_nameday_disp_time } },
+	{ "Words Of Wisdom Display Time",	MENU_ITEM_DEFAULT, { menu_set_wow_disp_time } },
+	{ "Save Settings to EEPROM", 		MENU_ITEM_DEFAULT, { menu_save_settings } }
 };
 
 

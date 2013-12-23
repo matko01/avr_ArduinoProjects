@@ -53,15 +53,16 @@ void main(void) {
 	lcd_ctx.settings = &settings;
 	lcd_ctx._lcd_backlight_timer = settings.lcd_bt_time;
 
+	tmp_setup(&temp);
+
 	// setup clock
-	rtc_setup(twi_ctx);
+	rtc_setup(twi_ctx, (struct temp_msr_ctx *)&temp.msr);
 
 	// disable interrupts temporary & 
 	// continue with HW init
 	cli();
 	timers_setup();
 	temp.sow_ctx = &sow_ctx;
-	tmp_setup(&temp);
 	tm.twi = twi_ctx;
 
 	fsmpd.tm = &tm;
@@ -110,6 +111,9 @@ void main(void) {
 					sizeof(tm.tm), 
 					E_TWI_BIT_SEND_STOP);
 			while (twi_ctx->status & E_TWI_BIT_BUSY);
+
+			// save temperatures
+			rtc_store_temperatures(twi_ctx,(struct temp_msr_ctx *)&temp.msr);
 			continue;
 		}
 

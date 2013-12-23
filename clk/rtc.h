@@ -25,7 +25,7 @@ struct time_ctx {
  *
  * @param a_ctx system context
  */
-void rtc_setup(volatile struct twi_ctx *a_ctx);
+void rtc_setup(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr);
 void rtc_store_temperatures(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr_ctx);
 void rtc_restore_temperatures(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr_ctx);
 

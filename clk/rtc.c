@@ -3,7 +3,7 @@
 #include "sys_config.h"
 
 
-void rtc_setup(volatile struct twi_ctx *a_ctx) {
+void rtc_setup(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr) {
 	uint8_t data[10] = {DS1307_CONTROL_ADDR};
 	uint8_t len = 0x00;
 
@@ -33,6 +33,8 @@ void rtc_setup(volatile struct twi_ctx *a_ctx) {
 
 		twi_mtx(TWI_RTC_ADDR, data, sizeof(data), E_TWI_BIT_SEND_STOP);
 		while (a_ctx->status & E_TWI_BIT_BUSY);
+
+		rtc_store_temperatures(a_ctx, msr);
 	}
 }
 
