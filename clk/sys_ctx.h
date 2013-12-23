@@ -89,7 +89,7 @@ struct sys_ctx {
 	struct sys_settings settings;
 
 	// lcd timeout
-	volatile uint16_t lcd_backlight_timer;
+	volatile uint16_t _lcd_backlight_timer;
 
 	// each bit represents the button state
 	volatile uint8_t buttons;
@@ -128,5 +128,6 @@ struct sys_ctx {
 	char display[LCD_NUMBER_OF_LINES][LCD_CHARACTERS_PER_LINE + 1];
 };
 
+extern volatile struct sys_ctx g_sys_ctx;
 
 #endif /* __SYS_CTX_H__ */

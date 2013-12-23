@@ -46,7 +46,7 @@ void main(void) {
 	sys_settings_get((struct sys_settings *)&g_sys_ctx.settings);
 
 	// setup the LED
-	led_setup(&g_sys_ctx.led);
+	led_setup((gpio_pin *)&g_sys_ctx.led);
 
 	// setup the display	
 	lcd_setup((struct dev_hd44780_ctx *)&g_sys_ctx.lcd_ctx);
@@ -110,7 +110,7 @@ void main(void) {
 		// if button pressed
 		if (g_sys_ctx.buttons) {
 			// refresh the timer
-			g_sys_ctx.lcd_backlight_timer = g_sys_ctx.settings.lcd_bt_time;
+			g_sys_ctx._lcd_backlight_timer = g_sys_ctx.settings.lcd_bt_time;
 
 			// push a key-press event
 			fsm_event_push(&g_sys_ctx.eq, 0x10 + g_sys_ctx.buttons);
