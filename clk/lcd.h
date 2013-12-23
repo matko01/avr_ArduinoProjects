@@ -37,19 +37,16 @@ struct lcd_ctx {
 	struct dev_hd44780_ctx dev;
 
 	// settings pointer
-	struct sys_settings *settings;
+	volatile struct sys_settings *settings;
 };
 
 
 void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx);
-void lcd_blit(struct lcd_ctx *a_lcd_ctx, uint8_t which);
-
+void lcd_blit(volatile struct lcd_ctx *a_lcd_ctx, uint8_t which);
 void lcd_update_backlight(volatile struct lcd_ctx *a_lcd_ctx);
 void lcd_update_transition(volatile struct lcd_ctx *a_lcd, volatile struct event_queue *eq);
 void lcd_update_backlight_timer(volatile struct lcd_ctx *a_lcd);
-
-
-void lcd_clean(struct lcd_ctx *a_lcd, uint8_t a_which);
+void lcd_clean(volatile struct lcd_ctx *a_lcd, uint8_t a_which);
 
 
 #endif /* __LCD_H__ */

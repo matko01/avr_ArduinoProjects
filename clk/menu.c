@@ -55,7 +55,6 @@ void menu_render(struct lcd_ctx *a_lcd, struct menu *a_menu) {
 	// render items
 	for (uint8_t i = 0; i<2; i++) {
 		const char *istr = a_menu->items[(i + so) % a_menu->cnt].name;
-		lcd_clean(a_lcd, i);
 		
 		if (i + so == a_menu->_cursor) {
 			if (str.s != istr) str.pos = 0;

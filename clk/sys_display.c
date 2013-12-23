@@ -18,7 +18,7 @@ static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *
 /* ================================================================================ */
 
 	
-void display_time(struct lcd_ctx *a_lcd, struct time_ctx *tm) {
+void display_time(volatile struct lcd_ctx *a_lcd, volatile struct time_ctx *tm) {
 
 	const char *weekdays[] = {
 		"Monday",
@@ -73,7 +73,7 @@ void display_time(struct lcd_ctx *a_lcd, struct time_ctx *tm) {
 }
 
 
-void display_temp(struct lcd_ctx *a_lcd, struct temp_msr_ctx *temp) {
+void display_temp(volatile struct lcd_ctx *a_lcd, volatile struct temp_msr_ctx *temp) {
 	snprintf((char *)a_lcd->display[0], LCD_CHARACTERS_PER_LINE + 1, "Current: %2.02f\xdf%c",
 			((float)temp->temp)/16, 'C'); 
 
@@ -87,7 +87,7 @@ void display_temp(struct lcd_ctx *a_lcd, struct temp_msr_ctx *temp) {
 
 void display_nameday(struct lcd_ctx *a_lcd, ds1307_time_t *tm) {
 	char ss_mem[40] = "";
-	uint16_t yd = get_year_day(tm) - 1;
+	uint16_t yd = (get_year_day(tm) - 1) % 366;
 
 	// make an index correction for non leap years
 	// since the FLASH table includes the leap year name-day as well
@@ -120,12 +120,10 @@ static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *
 	char output[LCD_CHARACTERS_PER_LINE + 1] = {0x00};
 	static struct scroll_str str = {0x00};
 
-	if (!str.s) {
+	if (data!=str.s) {
+		// update the string
 		scroll_str_init(&str, data, 0);
 	}
-
-	// update the string
-	str.s = data;
 
 	// length of the original string
 	str.len = strlen(data);

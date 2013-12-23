@@ -10,10 +10,10 @@
 
 struct fsm_pd {
 	struct time_ctx *tm;
-	struct temp_ctx *temp;
-	struct sys_settings *ss;
+	volatile struct temp_ctx *temp;
+	volatile struct sys_settings *ss;
 	volatile struct lcd_ctx *lcd;
-	struct event_queue *eq;
+	volatile struct event_queue *eq;
 };
 
 

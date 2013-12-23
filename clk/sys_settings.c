@@ -1,8 +1,9 @@
 #include "sys_settings.h"
 
 
-void sys_settings_get(struct sys_settings *a_ss) {
-	eeprom_read_block(a_ss, SETTINGS_EEPROM_ADDRESS, sizeof(struct sys_settings));
+void sys_settings_get(volatile struct sys_settings *a_ss) {
+	eeprom_read_block((void *)a_ss, 
+			SETTINGS_EEPROM_ADDRESS, sizeof(struct sys_settings));
 
 	// initialize if eeprom doesn't contain
 	// any settings yet

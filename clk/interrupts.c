@@ -34,7 +34,7 @@ ISR(TIMER0_OVF_vect) {
 	volatile uint8_t buttons = buttons_get();
 
 	// handle temperature measurements
-	tmp_update_tv(&g_int_ctx.tmp->msr);
+	tmp_update_tv(&(g_int_ctx.tmp->msr));
 
 	// update the back-light
 	lcd_update_backlight(g_int_ctx.lcd);
@@ -68,7 +68,6 @@ ISR(TIMER0_OVF_vect) {
 	// fast counter increment
 	// will overflow every ~16.5 minutes
 	g_int_ctx._fast_counter++;
-
 }
 
 
@@ -82,7 +81,7 @@ ISR(TIMER0_OVF_vect) {
  */
 ISR(INT0_vect) {
 
-	//  every 1 Hz event generation
+	// every 1 Hz event generation
 	fsm_event_push(g_int_ctx.eq, E_EVENT_1HZ);
 
 	// toggle the LED

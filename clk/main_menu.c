@@ -116,7 +116,7 @@ static void menu_set_time_mode(void *pd, uint8_t a_event) {
 }
 
 
-static void _menu_value_regulator(char *d, uint8_t a_event, uint8_t *a_value) {
+static void _menu_value_regulator(char *d, uint8_t a_event, volatile uint8_t *a_value) {
 	char pg[13] = {0x00};
 
 	switch (a_event) {
@@ -146,7 +146,8 @@ static void _menu_value_regulator(char *d, uint8_t a_event, uint8_t *a_value) {
 
 static void menu_set_lcd_brightness(void *pd, uint8_t a_event) {
 	struct fsm_pd *fpd = (struct fsm_pd *)pd;
-	_menu_value_regulator((char *)fpd->lcd->display[1], a_event, &fpd->ss->lcd_brightness);
+	_menu_value_regulator((char *)fpd->lcd->display[1], 
+			a_event, &fpd->ss->lcd_brightness);
 	SET_BRIGHTNESS(fpd->ss->lcd_brightness);
 }
 
@@ -158,7 +159,9 @@ static void menu_set_lcd_contrast(void *pd, uint8_t a_event) {
 }
 
 
-static void _menu_time_regulator(char *d, int8_t *idx, uint8_t *a_value, uint8_t a_event) {
+static void _menu_time_regulator(char *d, int8_t *idx, 
+		volatile uint8_t *a_value, 
+		uint8_t a_event) {
 	uint8_t times[] = { 5, 10, 15, 20, 30, 60, 90, 120 };
 
 	// perform initialization

@@ -1,6 +1,9 @@
 #include "lcd.h"
 #include "fsm.h"
 
+#include <avr/io.h>
+#include <util/atomic.h>
+
 
 void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
 	
@@ -25,15 +28,15 @@ void lcd_setup(struct dev_hd44780_ctx *a_lcd_ctx) {
 }
 
 
-void lcd_blit(struct lcd_ctx *a_lcd_ctx, uint8_t which) {
+void lcd_blit(volatile struct lcd_ctx *a_lcd_ctx, uint8_t which) {
 
 	// TODO maybe think about some other method 
 	// not to block interrupts so often
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		hd44780_goto(&a_lcd_ctx->dev, (which ? LCD_LINE01_ADDR : LCD_LINE00_ADDR));
-		hd44780_puts(&a_lcd_ctx->dev, a_lcd_ctx->display[0]);
-		hd44780_goto(&a_lcd_ctx->dev, (which ? LCD_LINE11_ADDR : LCD_LINE10_ADDR));
-		hd44780_puts(&a_lcd_ctx->dev, a_lcd_ctx->display[1]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_lcd_ctx->dev, (which ? LCD_LINE01_ADDR : LCD_LINE00_ADDR));
+		hd44780_puts((struct dev_hd44780_ctx *)&a_lcd_ctx->dev, (char *)a_lcd_ctx->display[0]);
+		hd44780_goto((struct dev_hd44780_ctx *)&a_lcd_ctx->dev, (which ? LCD_LINE11_ADDR : LCD_LINE10_ADDR));
+		hd44780_puts((struct dev_hd44780_ctx *)&a_lcd_ctx->dev, (char *)a_lcd_ctx->display[1]);
 	}
 }
 
@@ -78,14 +81,13 @@ void lcd_update_transition(volatile struct lcd_ctx *a_lcd, volatile struct event
 }
 
 
-__inline__
 void lcd_update_backlight_timer(volatile struct lcd_ctx *a_lcd) {
 	// decrement the back light timer
-	if (a_lcd->_lcd_backlight_timer) a_lcd->_lcd_backlight_timer--;
+	if (0 < a_lcd->_lcd_backlight_timer) (a_lcd->_lcd_backlight_timer)--;
 }
 
 
-void lcd_clean(struct lcd_ctx *a_lcd, uint8_t a_which) {
+void lcd_clean(volatile struct lcd_ctx *a_lcd, uint8_t a_which) {
 	sprintf((char *)a_lcd->display[0],"%16s", " ");
 	sprintf((char *)a_lcd->display[1],"%16s", " ");
 	lcd_blit(a_lcd, a_which);

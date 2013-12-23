@@ -56,11 +56,11 @@ struct sys_settings {
  *
  * @param a_ss system settings structure
  */
-void sys_settings_get(struct sys_settings *a_ss);
+void sys_settings_get(volatile struct sys_settings *a_ss);
 
 
 #define sys_settings_set(__ss) \
-		eeprom_write_block(__ss, SETTINGS_EEPROM_ADDRESS, sizeof(struct sys_settings));
+		eeprom_write_block((void *)__ss, SETTINGS_EEPROM_ADDRESS, sizeof(struct sys_settings));
 
 
 #endif /* __SYS_SETTINGS_H__ */
