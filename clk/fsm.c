@@ -4,6 +4,8 @@
 #include "sys_display.h"
 #include "lcd.h"
 #include "int_ctx.h"
+#include "menu.h"
+#include "main_menu.h"
 
 
 /* ================================================================================ */
@@ -13,6 +15,7 @@ void fsm_init(struct fsm_t *a_fsm, void *a_pd) {
 	a_fsm->cs.cb = FSM_INITIAL_STATE;
 	a_fsm->ps.cb = FSM_INITIAL_STATE;
 	a_fsm->pd = a_pd;
+	menu_set_private_data(&g_main_menu, a_pd);
 }
 
 
@@ -35,7 +38,6 @@ void fsm_event_push(volatile struct event_queue *eq, uint8_t event) {
 
 
 uint8_t fsm_event_pop(volatile struct event_queue *eq) {
-
 	uint8_t ev = E_EVENT_NONE;
 
 	if (eq->head != eq->tail) {
@@ -178,8 +180,7 @@ f_state fsm_state_disp_menu(struct fsm_t *a_fsm, uint8_t ev) {
 	state.cb = fsm_state_disp_menu;
 	struct fsm_pd *pd = (struct fsm_pd *)a_fsm->pd;
 
-	// TODO fix me
-	/* displayMenu(); */
+	menu_render((struct lcd_ctx *)pd->lcd, &g_main_menu);
 
 	switch (ev) {
 		case E_EVENT_TO:
@@ -193,8 +194,7 @@ f_state fsm_state_disp_menu(struct fsm_t *a_fsm, uint8_t ev) {
 		case E_EVENT_BUTTON_OK:
 		case E_EVENT_BUTTON_MINUS:
 		case E_EVENT_BUTTON_PLUS:
-			// TODO fix me
-			/* menu_process_input(g_sys_ctx.menu, ev); */
+			menu_process_input(&g_main_menu, ev);
 			g_int_ctx._event_timer = 60;
 			break;
 	}
@@ -325,8 +325,7 @@ f_state fsm_state_scroll_menu(struct fsm_t *a_fsm, uint8_t ev) {
 	if (a_fsm->ps.cb != fsm_state_disp_menu) {
 		// render menu only, the previous screen execution will be frozen
 		// during the transition
-		// TODO fix me
-		/* displayMenu(); */
+		menu_render((struct lcd_ctx *)pd->lcd, &g_main_menu);
 	}
 
 	switch (ev) {

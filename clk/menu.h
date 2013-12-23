@@ -19,13 +19,14 @@
  * 
  */
 
+#include "lcd.h"
 #include <stdint.h>
 
 
 /**
  * @brief callback type definition
  */
-typedef void (*menu_callback_t)(uint8_t);
+typedef void (*menu_callback_t)(void*,uint8_t);
 
 
 /// config flag definitions
@@ -71,11 +72,16 @@ struct menu {
 
 	// currently selected menu item
 	struct menu_item *_is;
+
+	// private data
+	void *_pd;
 };
 
 
-void menu_render(struct menu *a_menu);
+void menu_render(struct lcd_ctx *a_lcd, struct menu *a_menu);
 void menu_process_input(struct menu *a_menu, uint8_t a_input);
+void menu_set_private_data(struct menu *a_menu, void *a_data);
+void menu_render_progress_bar(char *a_buffer, uint8_t a_len, uint8_t a_min, uint8_t a_max, uint8_t a_cur);
 
 
 #endif /* MENU_H_VHOFYXWZ */

@@ -5,6 +5,7 @@
 #include "rtc.h"
 #include "temperature.h"
 #include "sys_settings.h"
+#include "fsm.h"
 
 
 struct fsm_pd {
@@ -12,6 +13,7 @@ struct fsm_pd {
 	struct temp_ctx *temp;
 	struct sys_settings *ss;
 	volatile struct lcd_ctx *lcd;
+	struct event_queue *eq;
 };
 
 

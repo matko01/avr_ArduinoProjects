@@ -14,6 +14,7 @@
 struct time_ctx {
 	// time
 	ds1307_time_t tm;
+	struct twi_ctx *twi;
 };
 
 

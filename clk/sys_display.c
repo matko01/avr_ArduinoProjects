@@ -114,13 +114,6 @@ void display_proverb(struct lcd_ctx *a_lcd, ds1307_time_t *tm) {
 	_pgmspace_display(a_lcd, "Words Of Wisdom:", ss_mem);
 }
 
-
-/*
-void displayMenu() {
-	menu_render(g_sys_ctx.menu);
-	lcd_blit(g_sys_ctx._vis_pos);
-}
-*/
 /* ================================================================================ */
 
 static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *data) {

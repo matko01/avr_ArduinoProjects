@@ -57,6 +57,7 @@ void main(void) {
 	fsmpd.temp = &temp;
 	fsmpd.lcd = &lcd_ctx;
 	fsmpd.ss = &settings;
+	fsmpd.eq = &fsm.eq;
 
 	fsm_init(&fsm, &fsmpd);
 	g_int_ctx._event_timer = settings.time_time;

@@ -3,6 +3,7 @@ SOURCES= \
 		 sys_setup.c \
 		 sys_util.c \
 		 menu.c \
+		 main_menu.c \
 		 sys_settings.c \
 		 sys_display.c \
 		 buttons.c \
