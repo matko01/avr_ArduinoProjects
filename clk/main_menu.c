@@ -5,6 +5,9 @@
 #include "pca.h"
 #include "string_util.h"
 #include "int_ctx.h"
+#include "sys_util.h"
+
+#include <string.h>
 
 /* ================================================================================ */
 
@@ -68,6 +71,7 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 	char year[5] = {0x00};
 	char mon[3] = {0x00};
 	char dom[3] = {0x00};
+	char tmp[5] = {0x00};
 
 	static uint8_t position = 0;
 	static ds1307_time_t tm = {0x00};
@@ -77,43 +81,77 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 	if (!tm.dom) {
 		tm = fpd->tm->tm;
 		tm.year = BCD2BIN(tm.year);
+		blink_str_init(&bstr, tmp, ' ');
 	}	
 
 	switch(position) {
 		case 0: 
 			{
-				char tmp[5] = {0x00};
 				if (E_EVENT_BUTTON_MINUS == a_event) {
-					tm.year++;
+					tm.year--;
 				}
 				else if (E_EVENT_BUTTON_PLUS == a_event) {
-					tm.year--;
+					tm.year++;
+				}
+				else if (E_EVENT_BUTTON_OK == a_event) {
+					position = 1;
 				}
 
 				tm.year = tm.year % 100;
-				sprintf(year, "%4d", tm.year + 2000);
-				if (bstr.str != year) {
-					blink_str_init(&bstr, year, ' ');
-				}
-
-				blink_str_paste(&bstr, tmp, sizeof(tmp)-1, g_int_ctx._fast_counter);
-				
-				sprintf(mon, "%x", tm.month);
-				sprintf(dom, "%x", tm.dom);
+				sprintf(tmp, "%4d", tm.year + 2000);
+				bstr.len = strlen(tmp);
+				blink_str_paste(&bstr, year, sizeof(year)-1, g_int_ctx._fast_counter);
+				sprintf(mon, "%02x", tm.month);
+				sprintf(dom, "%02x", tm.dom);
 			}
 			break;
 
 		case 1:
-			sprintf(mon, "%x", tm.month);
-			sprintf(mon, "%x", tm.dom);
+			{
+				if (E_EVENT_BUTTON_MINUS == a_event) {
+					tm.month--;
+				}
+				else if (E_EVENT_BUTTON_PLUS == a_event) {
+					tm.month++;
+				}
+				else if (E_EVENT_BUTTON_OK == a_event) {
+					position = 2;
+				}
+
+				tm.month = tm.month % 12;
+				sprintf(tmp, "%2d", tm.month);
+				bstr.len = strlen(tmp);
+				blink_str_paste(&bstr, mon, sizeof(mon)-1, g_int_ctx._fast_counter);
+				sprintf(year, "%04d", tm.year + 2000);
+				sprintf(dom, "%02x", tm.dom);
+			}
 			break;
 
 		case 2:
-			sprintf(mon, "%x", tm.month);
-			sprintf(mon, "%x", tm.dom);
+			{
+				if (E_EVENT_BUTTON_MINUS == a_event) {
+					tm.dom--;
+				}
+				else if (E_EVENT_BUTTON_PLUS == a_event) {
+					tm.dom++;
+				}
+				else if (E_EVENT_BUTTON_OK == a_event) {
+					++position;
+				}
+
+				tm.dom = tm.dom % get_month_days(tm.month, tm.year);
+				sprintf(tmp, "%2d", tm.dom);
+				bstr.len = strlen(tmp);
+				blink_str_paste(&bstr, dom, sizeof(dom)-1, g_int_ctx._fast_counter);
+				sprintf(year, "%04d", tm.year + 2000);
+				sprintf(mon, "%02x", tm.month);
+			}
 			break;
 
 		default:
+			tm.dom = 0;
+			position = 0;
+			// transmit data to the RTC
 			break;
 	} // switch
 
