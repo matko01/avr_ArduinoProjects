@@ -12,12 +12,13 @@ uint16_t get_year_day(ds1307_time_t *tm) {
 	uint8_t mon[] = {
 		31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 	};
+	int8_t i = tm->month;
 
 	if (is_leap_year(tm->year)) {
 		mon[1] = 29;
 	}
 
-	for (int8_t i = (tm->month - 1); i>0; i--) {
+	while (--i) {
 		day += mon[i - 1];
 	}
 

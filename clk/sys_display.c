@@ -19,7 +19,6 @@ static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *
 
 	
 void display_time(volatile struct lcd_ctx *a_lcd, volatile struct time_ctx *tm) {
-
 	const char *weekdays[] = {
 		"Sunday",
 		"Monday",
@@ -46,24 +45,24 @@ void display_time(volatile struct lcd_ctx *a_lcd, volatile struct time_ctx *tm) 
 
 	if (tm->tm.mode_ampm_hour & 0x40) {
 		// 12 hour mode
-		snprintf((char *)a_lcd->display[0], 
-				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %-7s",
+		sprintf((char *)a_lcd->display[0], 
+				"%2x:%02x:%02x %-7s",
 				tm->tm.mode_ampm_hour & 0x1f,
 				tm->tm.min,
 				tm->tm.ch_sec & 0x7f,
 				tm->tm.mode_ampm_hour & 0x20 ? "PM" : "AM");
 	}
 	else {
-		snprintf((char *)a_lcd->display[0], 
-				LCD_CHARACTERS_PER_LINE + 1, "%2x:%02x:%02x %7s",
+		sprintf((char *)a_lcd->display[0], 
+				"%2x:%02x:%02x %7s",
 				tm->tm.mode_ampm_hour & 0x3f,
 				tm->tm.min,
 				tm->tm.ch_sec & 0x7f,
 				" ");
 	}
 
-	snprintf((char *)a_lcd->display[1], 
-			LCD_CHARACTERS_PER_LINE + 1, "%4d-%02x-%02x, %4s",
+	sprintf((char *)a_lcd->display[1], 
+			"%4d-%02x-%02x, %4s",
 			BCD2BIN(tm->tm.year) + 2000,
 			tm->tm.month,
 			tm->tm.dom,
@@ -130,8 +129,8 @@ static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *
 
 	// get a string slice
 	scroll_str_paste(&str, output, sizeof(output) - 1, g_int_ctx._fast_counter);
-	snprintf((char *)a_lcd->display[0], LCD_CHARACTERS_PER_LINE + 1, "%-16s", a_title);
-	snprintf((char *)a_lcd->display[1], LCD_CHARACTERS_PER_LINE + 1, "%-16s", output); 
+	sprintf((char *)a_lcd->display[0], "%-16s", a_title);
+	sprintf((char *)a_lcd->display[1], "%-16s", output); 
 	lcd_blit(a_lcd, 1);
 }
 
