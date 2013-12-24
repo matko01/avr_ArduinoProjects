@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define SCROLLING_SPEED 16
-#define BLINKING_SPEED 16
+#define SCROLLING_SPEED 20
+#define BLINKING_SPEED 20
 
 
 struct scroll_str {
@@ -26,7 +26,6 @@ struct blink_str {
 	uint16_t marker;
 	// flag
 	uint8_t _f;
-
 	// the string itself
 	char *str;
 };

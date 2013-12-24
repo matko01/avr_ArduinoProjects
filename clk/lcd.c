@@ -72,8 +72,8 @@ void lcd_update_transition(volatile struct lcd_ctx *a_lcd, volatile struct event
 				hd44780_write((struct dev_hd44780_ctx *)&a_lcd->dev, 
 						HD44780_CMD_CD_SHIFT(1, 1), 0);
 		}
-		
-		if (a_lcd->_vis_pos == a_lcd->_cur_pos) {
+		else /*if (a_lcd->_vis_pos == a_lcd->_cur_pos)*/ 
+		{
 			// the transition has ended
 			fsm_event_push(eq, E_EVENT_TRANSITION_END);
 		}

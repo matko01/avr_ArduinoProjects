@@ -2,6 +2,14 @@
 #include "menu.h"
 #include "fsm_private_data.h"
 #include "sys_setup.h"
+#include "pca.h"
+#include "string_util.h"
+#include "int_ctx.h"
+
+/* ================================================================================ */
+
+static void _menu_value_regulator(char *d, uint8_t a_event, volatile uint8_t *a_value);
+static void _menu_time_regulator(char *d, int8_t *idx, volatile uint8_t *a_value, uint8_t a_event);
 
 /* ================================================================================ */
 
@@ -54,28 +62,67 @@ static void menu_set_time(void *pd, uint8_t a_event) {
 
 
 static void menu_set_date(void *pd, uint8_t a_event) {
-	/* static uint8_t position = 0; */
-	/* uint8_t data[2] = {DS1307_DOM_ADDR}; */
+	struct fsm_pd *fpd = (struct fsm_pd *)pd;
 
-	/* switch(position) { */
-	/* 	case 0: */
-	/* 		break; */
+	// strings
+	char year[5] = {0x00};
+	char mon[3] = {0x00};
+	char dom[3] = {0x00};
 
-	/* 	case 1: */
-	/* 		break; */
+	static uint8_t position = 0;
+	static ds1307_time_t tm = {0x00};
+	static struct blink_str bstr = {0x00};
+	
+	// initialization
+	if (!tm.dom) {
+		tm = fpd->tm->tm;
+		tm.year = BCD2BIN(tm.year);
+	}	
 
-	/* 	case 2: */
-	/* 		break; */
+	switch(position) {
+		case 0: 
+			{
+				char tmp[5] = {0x00};
+				if (E_EVENT_BUTTON_MINUS == a_event) {
+					tm.year++;
+				}
+				else if (E_EVENT_BUTTON_PLUS == a_event) {
+					tm.year--;
+				}
 
-	/* 	default: */
-	/* 		break; */
-	/* } // switch */
+				tm.year = tm.year % 100;
+				sprintf(year, "%4d", tm.year + 2000);
+				if (bstr.str != year) {
+					blink_str_init(&bstr, year, ' ');
+				}
 
-	/* snprintf((char *)g_sys_ctx.display[1],  */
-	/* 		LCD_CHARACTERS_PER_LINE + 1, " %4d-%02x-%02x     ", */
-	/* 		BCD2BIN(g_sys_ctx.tm.year) + 2000, */
-	/* 		g_sys_ctx.tm.month, */
-	/* 		g_sys_ctx.tm.dom); */
+				blink_str_paste(&bstr, tmp, sizeof(tmp)-1, g_int_ctx._fast_counter);
+				
+				sprintf(mon, "%x", tm.month);
+				sprintf(dom, "%x", tm.dom);
+			}
+			break;
+
+		case 1:
+			sprintf(mon, "%x", tm.month);
+			sprintf(mon, "%x", tm.dom);
+			break;
+
+		case 2:
+			sprintf(mon, "%x", tm.month);
+			sprintf(mon, "%x", tm.dom);
+			break;
+
+		default:
+			break;
+	} // switch
+
+	snprintf((char *)fpd->lcd->display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, " %4s-%2s-%2s     ",
+			year,
+			mon,
+			dom);
+
 }
 
 
@@ -88,8 +135,8 @@ static void menu_set_time_mode(void *pd, uint8_t a_event) {
 	uint8_t data[2] = {DS1307_HOURS_ADDR};
 	struct fsm_pd *fpd = (struct fsm_pd *)pd;
 	const char *mode[] = {
-		"24 mode",
-		"12 AM/PM mode"
+		"24",
+		"12 AM/PM"
 	};
 
 	switch (a_event) {
@@ -111,36 +158,8 @@ static void menu_set_time_mode(void *pd, uint8_t a_event) {
 
 	snprintf((char *)fpd->lcd->display[1], 
 			LCD_CHARACTERS_PER_LINE + 1, 
-			" %-15s",
+			" %8s mode  ",
 			mode[(fpd->tm->tm.mode_ampm_hour & 0x40) >> 6]);
-}
-
-
-static void _menu_value_regulator(char *d, uint8_t a_event, volatile uint8_t *a_value) {
-	char pg[13] = {0x00};
-
-	switch (a_event) {
-		case E_EVENT_BUTTON_MINUS:
-			if (*a_value >= 0x08)
-				*a_value -= 0x08;
-			else 
-				*a_value = 0;
-			break;
-
-		case E_EVENT_BUTTON_PLUS:
-			if (*a_value < 0xf7)
-				*a_value += 0x08;
-			else 
-				*a_value = 0xff;
-			break;
-	} // switch
-
-	menu_render_progress_bar(pg, 12, 0, 255, *a_value);
-	snprintf(d, 
-			LCD_CHARACTERS_PER_LINE + 1, 
-			"%03d %s",
-			*a_value,
-			pg);
 }
 
 
@@ -157,42 +176,6 @@ static void menu_set_lcd_contrast(void *pd, uint8_t a_event) {
 	_menu_value_regulator((char *)fpd->lcd->display[1], a_event, &fpd->ss->lcd_contrast);
 	SET_CONTRAST(fpd->ss->lcd_contrast);
 }
-
-
-static void _menu_time_regulator(char *d, int8_t *idx, 
-		volatile uint8_t *a_value, 
-		uint8_t a_event) {
-	uint8_t times[] = { 5, 10, 15, 20, 30, 60, 90, 120 };
-
-	// perform initialization
-	if (-1 == *idx) {
-		*idx = 0;
-		// search for configuration
-		for (uint8_t i = 0; i < sizeof(times); i++) {
-			if (*a_value == times[i]) {
-				*idx = i;
-				break;
-			}
-		}
-	} // if
-
-	switch (a_event) {
-		case E_EVENT_BUTTON_MINUS:
-			if (*idx) (*idx)--;
-			break;
-
-		case E_EVENT_BUTTON_PLUS:
-			if (*idx<(sizeof(times) - 1)) (*idx)++;
-			break;
-	} // switch
-
-	*a_value = times[*idx];
-	snprintf(d, 
-			LCD_CHARACTERS_PER_LINE + 1, 
-			"  %2d secs       ",
-			times[*idx]);
-}
-
 
 
 static void menu_set_lcd_backlight(void *pd, uint8_t a_event) {
@@ -299,6 +282,81 @@ static void menu_save_settings(void *pd, uint8_t a_event) {
 		cnt = 30;
 		fsm_event_push(fpd->eq, E_EVENT_BUTTON_OK);
 	}
+}
+
+
+/* ================================================================================ */
+
+static void _menu_time_regulator(char *d, int8_t *idx, 
+		volatile uint8_t *a_value, 
+		uint8_t a_event) {
+	uint8_t times[] = { 5, 10, 15, 20, 30, 60, 90, 120 };
+
+	// avoid working on bare pointer since it produces bigger code
+	int8_t aidx = *idx;	
+
+	// perform initialization
+	if (-1 == aidx) {
+		aidx = 0;
+		// search for configuration
+		for (uint8_t i = 0; i < sizeof(times); i++) {
+			if (*a_value == times[i]) {
+				aidx = i;
+				break;
+			}
+		}
+	} // if
+
+	switch (a_event) {
+		case E_EVENT_BUTTON_MINUS:
+			aidx--;
+			break;
+
+		case E_EVENT_BUTTON_PLUS:
+			aidx++;
+			break;
+	} // switch
+
+	aidx = aidx % sizeof(times);
+
+	*a_value = times[aidx];
+	snprintf(d, 
+			LCD_CHARACTERS_PER_LINE + 1, 
+			"  %2d secs       ",
+			times[aidx]);
+
+	*idx = aidx;
+}
+
+
+static void _menu_value_regulator(char *d, uint8_t a_event, volatile uint8_t *a_value) {
+	char pg[13] = {0x00};
+	volatile uint8_t av = *a_value;
+
+	switch (a_event) {
+		case E_EVENT_BUTTON_MINUS:
+			if (av >= 0x08) 
+				av -= 0x08;
+			else 
+				av = 0;
+			break;
+
+		case E_EVENT_BUTTON_PLUS:
+			if (av < 0xf7)
+				av += 0x08;
+			else 
+				av = 0xff;
+			break;
+	} // switch
+
+	menu_render_progress_bar(pg, 12, 0, 255, av);
+	snprintf(d, 
+			LCD_CHARACTERS_PER_LINE + 1, 
+			"%03d %s",
+			av,
+			pg);
+
+	*a_value = av;
 }
 
 

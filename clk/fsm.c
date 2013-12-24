@@ -63,7 +63,7 @@ f_state fsm_state_disp_time(struct fsm_t *a_fsm, uint8_t ev) {
 	switch (ev) {
 		case E_EVENT_TO:
 		case E_EVENT_BUTTON_OK:
-			if (0 == (cnt++%2)) {
+			if (0 == (++cnt%2)) {
 				state.cb = fsm_state_scroll_nm;
 			}
 			else if (0 == (cnt%3)) {
@@ -73,13 +73,13 @@ f_state fsm_state_disp_time(struct fsm_t *a_fsm, uint8_t ev) {
 				// scroll to temp
 				state.cb = fsm_state_scroll_time;
 			}
-			pd->lcd->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			pd->lcd->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1) << 3;
 			a_fsm->ps.cb = fsm_state_disp_time;
 			break;			
 
 		case E_EVENT_BUTTON_MENU:
 			lcd_clean((struct lcd_ctx *)pd->lcd, 1);
-			pd->lcd->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1)*8;
+			pd->lcd->_vis_pos = (LCD_CHARACTERS_PER_LINE + 1) << 3;
 
 			state.cb = fsm_state_scroll_menu;
 			a_fsm->ps.cb = fsm_state_disp_time;

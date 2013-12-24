@@ -21,15 +21,15 @@ static void _pgmspace_display(struct lcd_ctx *a_lcd, const char *a_title, char *
 void display_time(volatile struct lcd_ctx *a_lcd, volatile struct time_ctx *tm) {
 
 	const char *weekdays[] = {
+		"Sunday",
 		"Monday",
 		"Tuesday",
 		"Wednesday",
 		"Thursday",
 		"Friday",
-		"Saturday",
-		"Sunday"
+		"Saturday"
 	};
-	uint8_t x = tm->tm.dow ? tm->tm.dow - 1 : 0x00;
+	uint8_t x = tm->tm.dow % 7;
 	char output[5] = {0x00};
 	uint8_t len = sizeof(output);
 	static struct scroll_str str = {0x00};

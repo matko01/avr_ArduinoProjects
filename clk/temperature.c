@@ -9,6 +9,7 @@ uint8_t tmp_setup(volatile struct temp_ctx *a_ctx) {
 	// update min/max values
 	a_ctx->msr.temp_min = 0xffff;
 	a_ctx->msr.temp_max = 0x00;
+	a_ctx->msr.temp = 0x00;
 
 	// perform HW init 12 bit resolution
 	ds18b20_write_rom((struct soft_ow *)a_ctx->sow_ctx, NULL, 0x00, 0x00, 0x03, 0x00);

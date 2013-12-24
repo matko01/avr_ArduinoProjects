@@ -54,7 +54,6 @@ void rtc_restore_temperatures(volatile struct twi_ctx *a_ctx, struct temp_msr_ct
 
 	twi_mtx(TWI_RTC_ADDR, data, 0x01, 0x00);
 	while (a_ctx->status & E_TWI_BIT_BUSY);
-	
 	twi_mrx(TWI_RTC_ADDR, &data[1], sizeof(uint8_t)*4, E_TWI_BIT_SEND_STOP);
 	while (a_ctx->status & E_TWI_BIT_BUSY);
 
