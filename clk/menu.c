@@ -39,7 +39,8 @@ void menu_render(struct lcd_ctx *a_lcd, struct menu *a_menu) {
 		scroll_str_paste(&str, output, sizeof(output) - 1, g_int_ctx._fast_counter);
 
 		// render the function name
-		sprintf((char *)a_lcd->display[0], 
+		snprintf((char *)a_lcd->display[0], 
+				LCD_CHARACTERS_PER_LINE + 1,
 				"%-16s",				
 			   	output);
 
@@ -62,7 +63,8 @@ void menu_render(struct lcd_ctx *a_lcd, struct menu *a_menu) {
 			}
 
 			// render an item
-			sprintf((char *)a_lcd->display[i], 
+			snprintf((char *)a_lcd->display[i], 
+					LCD_CHARACTERS_PER_LINE + 1,
 					"%c%-15s",
 					i + so == a_menu->_cursor ? '>' : ' ',
 					i + so == a_menu->_cursor ? output : istr);
@@ -92,7 +94,10 @@ void menu_process_input(struct menu *a_menu, uint8_t a_input) {
 	}
 	else {
 		a_menu->_is->ptr.cb(a_menu->_pd, a_input);
-		if (a_input == E_EVENT_BUTTON_OK) a_menu->_is = NULL;
+		if (a_input == E_EVENT_BUTTON_OK && 
+				!(a_menu->_is->config & MENU_ITEM_OWNER)) {
+			a_menu->_is = NULL;
+		}
 	}			
 
 	_delay_ms(333);

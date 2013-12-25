@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define SCROLLING_SPEED 20
-#define BLINKING_SPEED 20
+#define BLINKING_SPEED 16
 
 
 struct scroll_str {
@@ -23,7 +23,7 @@ struct blink_str {
 	// length of the string
 	uint8_t len;
 	// timestamp marker
-	uint16_t marker;
+	volatile uint16_t marker;
 	// flag
 	uint8_t _f;
 	// the string itself
@@ -33,8 +33,7 @@ struct blink_str {
 
 void scroll_str_init(struct scroll_str *a_scrl_str, char *a_str, uint8_t a_len);
 void scroll_str_paste(struct scroll_str *a_scrl_str, char *a_output, uint8_t a_len, volatile uint16_t a_cnt);
-
 void blink_str_init(struct blink_str *a_bl_str, char *a_str, char replacer);
-void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, volatile uint16_t a_cnt);
+void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, uint8_t a_force, volatile uint16_t a_cnt);
 
 #endif /* __STRING_UTIL_H__ */

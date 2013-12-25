@@ -1,6 +1,7 @@
 #include "string_util.h"
 #include <string.h>
 
+#include <stdio.h>
 
 void scroll_str_init(struct scroll_str *a_scrl_str, char *a_str, uint8_t a_len) {
 	a_scrl_str->s = a_str;
@@ -62,10 +63,10 @@ void blink_str_init(struct blink_str *a_bl_str, char *a_str, char replacer) {
 }
 
 
-void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, volatile uint16_t a_cnt) {
+void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, uint8_t a_force, volatile uint16_t a_cnt) {
 
-	if (a_bl_str->_f) {
-		strncpy(a_output, a_bl_str->str, a_len);
+	if (a_bl_str->_f || a_force) {
+		strncpy(a_output, (char *)a_bl_str->str, a_len);
 	}
 	else {
 		for (uint8_t i = 0; i<a_len; i++) {
@@ -75,6 +76,6 @@ void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, 
 
 	if (a_cnt > a_bl_str->marker) {
 		a_bl_str->marker = a_cnt + BLINKING_SPEED;
-		a_bl_str->_f = (a_bl_str->_f + 1) % 2;
+		a_bl_str->_f = (a_bl_str->_f + 1) & 0x01;
 	}
 }

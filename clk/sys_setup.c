@@ -37,10 +37,10 @@ void timers_setup() {
 	power_timer0_enable();
 	power_timer2_enable();
 
-	// fast PWM mode on OC2A (PB3) - OC2B (PD3)
+	// phase-correct PWM mode on OC2A (PB3) - OC2B (PD3)
 	// in non inverting mode
 	// prescaler = 256
-	TCCR2A = 0xa3;
+	TCCR2A = 0xa1;
 	TCCR2B = 0x01;
 
 	// timer 0 in normal mode (61 Hz)

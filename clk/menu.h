@@ -33,6 +33,9 @@ typedef void (*menu_callback_t)(void*,uint8_t);
 #define MENU_ITEM_INACTIVE 0x02
 #define MENU_ITEM_SUBMENU 0x01
 
+// if this bit is set the suboption is responsible
+// for terminating it's own execution
+#define MENU_ITEM_OWNER	0x04
 
 /// default item configuration
 #define MENU_ITEM_DEFAULT 0x00

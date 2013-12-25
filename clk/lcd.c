@@ -49,7 +49,7 @@ void lcd_update_backlight(volatile struct lcd_ctx *a_lcd) {
 			++OCR2A;
 	}
 	else {
-		if (OCR2A) OCR2A--;
+		if (OCR2A) --OCR2A;
 	}
 }
 
@@ -72,7 +72,8 @@ void lcd_update_transition(volatile struct lcd_ctx *a_lcd, volatile struct event
 				hd44780_write((struct dev_hd44780_ctx *)&a_lcd->dev, 
 						HD44780_CMD_CD_SHIFT(1, 1), 0);
 		}
-		else /*if (a_lcd->_vis_pos == a_lcd->_cur_pos)*/ 
+
+		if (a_lcd->_vis_pos == a_lcd->_cur_pos)
 		{
 			// the transition has ended
 			fsm_event_push(eq, E_EVENT_TRANSITION_END);

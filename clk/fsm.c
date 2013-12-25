@@ -89,6 +89,11 @@ f_state fsm_state_disp_time(struct fsm_t *a_fsm, uint8_t ev) {
 	return state;
 }
 
+static void _goto_menu_d0(volatile struct lcd_ctx *lcd) {
+	lcd_clean((struct lcd_ctx *)lcd, 0);
+	lcd->_vis_pos = 0;
+}
+
 
 f_state fsm_state_disp_temp(struct fsm_t *a_fsm, uint8_t ev) {
 	f_state state;
@@ -107,9 +112,8 @@ f_state fsm_state_disp_temp(struct fsm_t *a_fsm, uint8_t ev) {
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			lcd_clean((struct lcd_ctx *)pd->lcd, 0);
-			pd->lcd->_vis_pos = 0;
 			a_fsm->ps.cb = fsm_state_disp_temp;
+			_goto_menu_d0(pd->lcd);
 			break;
 	}
 
@@ -135,9 +139,8 @@ f_state fsm_state_disp_nm(struct fsm_t *a_fsm, uint8_t ev) {
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			pd->lcd->_vis_pos = 0;
-			lcd_clean((struct lcd_ctx *)pd->lcd, 0);
 			a_fsm->ps.cb = fsm_state_disp_nm;
+			_goto_menu_d0(pd->lcd);
 			break;
 	}
 
@@ -163,9 +166,8 @@ f_state fsm_state_disp_pv(struct fsm_t *a_fsm, uint8_t ev) {
 
 		case E_EVENT_BUTTON_MENU:
 			state.cb = fsm_state_scroll_menu;
-			pd->lcd->_vis_pos = 0;
-			lcd_clean((struct lcd_ctx *)pd->lcd, 0);
 			a_fsm->ps.cb = fsm_state_disp_pv;
+			_goto_menu_d0(pd->lcd);
 			break;
 
 	} // switch

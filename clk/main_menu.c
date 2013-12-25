@@ -32,8 +32,8 @@ static void menu_save_settings(void*,uint8_t);
 /* ================================================================================ */
 
 static struct menu_item items[] = {
-	{ "Set Time", 						MENU_ITEM_DEFAULT, { menu_set_time } }, 
-	{ "Set Date", 						MENU_ITEM_DEFAULT, { menu_set_date } }, 
+	{ "Set Time", 						MENU_ITEM_OWNER, { menu_set_time } }, 
+	{ "Set Date", 						MENU_ITEM_OWNER, { menu_set_date } }, 
 	{ "Time Mode", 						MENU_ITEM_DEFAULT, { menu_set_time_mode } }, 
 	{ "LCD Brightness", 				MENU_ITEM_DEFAULT, { menu_set_lcd_brightness } }, 
 	{ "LCD Contrast", 					MENU_ITEM_DEFAULT, { menu_set_lcd_contrast } },
@@ -60,7 +60,130 @@ struct menu g_main_menu = {
 
 
 static void menu_set_time(void *pd, uint8_t a_event) {
-	// TODO implement me
+	struct fsm_pd *fpd = (struct fsm_pd *)pd;
+
+	// strings
+	char hour[3] = {0x00};
+	char min[3] = {0x00};
+	char sec[3] = {0x00};
+	char tmp[3] = {0x00};
+
+	static uint8_t position = 0;
+	static ds1307_time_t tm = {0x00};
+	static struct blink_str bstr = {0x00};
+	static uint8_t force = 0;
+	
+	// initialization
+	if (bstr.str != tmp) {
+		tm = fpd->tm->tm;
+		tm.ch_sec = BCD2BIN((tm.ch_sec & 0x3f));
+		tm.min = BCD2BIN(tm.min);
+		blink_str_init(&bstr, tmp, ' ');
+	}
+
+	// event integration
+	if (force) force--;
+
+	switch(position) {
+		/* case 0:  */
+		/* 	{ */
+		/* 		if (E_EVENT_BUTTON_MINUS == a_event) { */
+		/* 			tm.year--; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_PLUS == a_event) { */
+		/* 			tm.year++; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_OK == a_event) { */
+		/* 			position = 1; */
+		/* 		} */
+
+		/* 		tm.year = tm.year % 100; */
+		/* 		sprintf(tmp, "%4d", tm.year + 2000); */
+		/* 		bstr.len = strlen(tmp); */
+		/* 		blink_str_paste(&bstr, year, sizeof(year)-1,  */
+		/* 				force, g_int_ctx._fast_counter); */
+		/* 		sprintf(mon, "%02d", tm.month); */
+		/* 		sprintf(dom, "%02d", tm.dom); */
+		/* 	} */
+		/* 	break; */
+
+		/* case 1: */
+		/* 	{ */
+		/* 		if (E_EVENT_BUTTON_MINUS == a_event) { */
+		/* 			tm.month--; */
+		/* 			if (0 == tm.month) tm.month = 12; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_PLUS == a_event) { */
+		/* 			tm.month++; */
+		/* 			if (12 < tm.month) tm.month = 1; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_OK == a_event) { */
+		/* 			position = 2; */
+		/* 		} */
+
+		/* 		sprintf(tmp, "%02d", tm.month); */
+		/* 		bstr.len = strlen(tmp); */
+		/* 		blink_str_paste(&bstr, mon, sizeof(mon)-1, force, g_int_ctx._fast_counter); */
+		/* 		sprintf(year, "%04d", tm.year + 2000); */
+		/* 		sprintf(dom, "%02d", tm.dom); */
+		/* 	} */
+		/* 	break; */
+
+		/* case 2: */
+		/* 	{ */
+		/* 		uint8_t d = get_month_days(tm.month, tm.year + 2000); */
+		/* 		if (E_EVENT_BUTTON_MINUS == a_event) { */
+		/* 			tm.dom--; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_PLUS == a_event) { */
+		/* 			tm.dom++; */
+		/* 			force = 16; */
+		/* 		} */
+		/* 		else if (E_EVENT_BUTTON_OK == a_event) { */
+		/* 			++position; */
+		/* 		} */
+ 
+		/* 		tm.dom = tm.dom > d ? 1 : (tm.dom == 0 ? d : tm.dom); */
+
+		/* 		sprintf(tmp, "%02d", tm.dom); */
+		/* 		bstr.len = strlen(tmp); */
+		/* 		blink_str_paste(&bstr, dom, sizeof(dom)-1, force, g_int_ctx._fast_counter); */
+		/* 		sprintf(year, "%04d", tm.year + 2000); */
+		/* 		sprintf(mon, "%02d", tm.month); */
+		/* 	} */
+		/* 	break; */
+
+		/* default: */
+		/* 	position = 0; */
+		/* 	bstr.str = NULL; */
+
+		/* 	// transmit data to the RTC */
+		/* 	{ */
+		/* 		tm.dow = get_day_of_week(tm.year, tm.month, tm.dom) + 1; */
+		/* 		tm.year = BIN2BCD(tm.year); */
+		/* 		tm.dom = BIN2BCD(tm.dom); */
+		/* 		tm.month = BIN2BCD(tm.month); */
+		/* 		tm.mode_ampm_hour = DS1307_DOW_ADDR; */
+
+		/* 		twi_mtx(TWI_RTC_ADDR, &tm.mode_ampm_hour, 5, E_TWI_BIT_SEND_STOP); */
+		/* 		while (fpd->tm->twi->status & E_TWI_BIT_BUSY); */
+		/* 	} */
+
+		/* 	// this is cheating - but I'm trying to save flash space */
+		/* 	g_main_menu._is = NULL;  */
+		/* 	break; */
+	} // switch
+
+	snprintf((char *)fpd->lcd->display[1], 
+			LCD_CHARACTERS_PER_LINE + 1, " %2s-%2s-%2s     ",
+			hour,
+			min,
+			sec);
 }
 
 
@@ -71,27 +194,37 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 	char year[5] = {0x00};
 	char mon[3] = {0x00};
 	char dom[3] = {0x00};
-	char tmp[5] = {0x00};
 
 	static uint8_t position = 0;
 	static ds1307_time_t tm = {0x00};
 	static struct blink_str bstr = {0x00};
+	static uint8_t force = 0;
+
+	char tmp[5] = {0x00};
 	
 	// initialization
-	if (!tm.dom) {
+	if (bstr.str != tmp) {
 		tm = fpd->tm->tm;
 		tm.year = BCD2BIN(tm.year);
+		tm.month = BCD2BIN(tm.month);
+		tm.dom = BCD2BIN(tm.dom);
+
 		blink_str_init(&bstr, tmp, ' ');
-	}	
+	}
+
+	// event integration
+	if (force) force--;
 
 	switch(position) {
 		case 0: 
 			{
 				if (E_EVENT_BUTTON_MINUS == a_event) {
 					tm.year--;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_PLUS == a_event) {
 					tm.year++;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_OK == a_event) {
 					position = 1;
@@ -100,9 +233,10 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 				tm.year = tm.year % 100;
 				sprintf(tmp, "%4d", tm.year + 2000);
 				bstr.len = strlen(tmp);
-				blink_str_paste(&bstr, year, sizeof(year)-1, g_int_ctx._fast_counter);
-				sprintf(mon, "%02x", tm.month);
-				sprintf(dom, "%02x", tm.dom);
+				blink_str_paste(&bstr, year, sizeof(year)-1, 
+						force, g_int_ctx._fast_counter);
+				sprintf(mon, "%02d", tm.month);
+				sprintf(dom, "%02d", tm.dom);
 			}
 			break;
 
@@ -110,48 +244,69 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 			{
 				if (E_EVENT_BUTTON_MINUS == a_event) {
 					tm.month--;
+					if (0 == tm.month) tm.month = 12;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_PLUS == a_event) {
 					tm.month++;
+					if (12 < tm.month) tm.month = 1;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_OK == a_event) {
 					position = 2;
 				}
 
-				tm.month = tm.month % 12;
-				sprintf(tmp, "%2d", tm.month);
+				sprintf(tmp, "%02d", tm.month);
 				bstr.len = strlen(tmp);
-				blink_str_paste(&bstr, mon, sizeof(mon)-1, g_int_ctx._fast_counter);
+				blink_str_paste(&bstr, mon, sizeof(mon)-1, force, g_int_ctx._fast_counter);
 				sprintf(year, "%04d", tm.year + 2000);
-				sprintf(dom, "%02x", tm.dom);
+				sprintf(dom, "%02d", tm.dom);
 			}
 			break;
 
 		case 2:
 			{
+				uint8_t d = get_month_days(tm.month, tm.year + 2000);
 				if (E_EVENT_BUTTON_MINUS == a_event) {
 					tm.dom--;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_PLUS == a_event) {
 					tm.dom++;
+					force = 16;
 				}
 				else if (E_EVENT_BUTTON_OK == a_event) {
 					++position;
 				}
+ 
+				tm.dom = tm.dom > d ? 1 : (tm.dom == 0 ? d : tm.dom);
 
-				tm.dom = tm.dom % get_month_days(tm.month, tm.year);
-				sprintf(tmp, "%2d", tm.dom);
+				sprintf(tmp, "%02d", tm.dom);
 				bstr.len = strlen(tmp);
-				blink_str_paste(&bstr, dom, sizeof(dom)-1, g_int_ctx._fast_counter);
+				blink_str_paste(&bstr, dom, sizeof(dom)-1, force, g_int_ctx._fast_counter);
 				sprintf(year, "%04d", tm.year + 2000);
-				sprintf(mon, "%02x", tm.month);
+				sprintf(mon, "%02d", tm.month);
 			}
 			break;
 
 		default:
-			tm.dom = 0;
 			position = 0;
+			bstr.str = NULL;
+
 			// transmit data to the RTC
+			{
+				tm.dow = get_day_of_week(tm.year, tm.month, tm.dom) + 1;
+				tm.year = BIN2BCD(tm.year);
+				tm.dom = BIN2BCD(tm.dom);
+				tm.month = BIN2BCD(tm.month);
+				tm.mode_ampm_hour = DS1307_DOW_ADDR;
+
+				twi_mtx(TWI_RTC_ADDR, &tm.mode_ampm_hour, 5, E_TWI_BIT_SEND_STOP);
+				while (fpd->tm->twi->status & E_TWI_BIT_BUSY);
+			}
+
+			// this is cheating - but I'm trying to save flash space
+			g_main_menu._is = NULL; 
 			break;
 	} // switch
 
