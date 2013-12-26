@@ -65,6 +65,10 @@ void blink_str_init(struct blink_str *a_bl_str, char *a_str, char replacer) {
 
 void blink_str_paste(struct blink_str *a_bl_str, char *a_output, uint8_t a_len, uint8_t a_force, volatile uint16_t a_cnt) {
 
+	if (NULL == a_output) {
+		return;
+	}
+
 	if (a_bl_str->_f || a_force) {
 		strncpy(a_output, (char *)a_bl_str->str, a_len);
 	}
