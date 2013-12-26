@@ -368,7 +368,7 @@ static void menu_set_time_mode(void *pd, uint8_t a_event) {
 	uint8_t data[2] = {DS1307_HOURS_ADDR};
 	struct fsm_pd *fpd = (struct fsm_pd *)pd;
 	const char *mode[] = {
-		"24",
+		"24 Hour",
 		"12 AM/PM"
 	};
 
@@ -399,9 +399,9 @@ static void menu_set_time_mode(void *pd, uint8_t a_event) {
 			}
 			else {
 				// correct for 24h mode
-				uint8_t hour = BCD2BIN(data[1] & 0x1f);
+				uint8_t hour = BCD2BIN((data[1] & 0x1f));
 				if (data[1] & 0x20) {
-					hour = hour == 12 ? 12 : (hour + 12);
+					hour = (hour == 12) ? 12 : (hour + 12);
 				}
 				else {
 					hour = hour == 12 ? 0 : hour;
