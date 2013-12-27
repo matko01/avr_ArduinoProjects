@@ -51,8 +51,8 @@ void main(void) {
 	tmp_setup(&temp);
 
 	// setup clock
-	memset((void *)&tm, 0x00, sizeof(struct time_ctx));
 	rtc_setup(twi_ctx, (struct temp_msr_ctx *)&temp.msr);
+	memset((void *)&tm, 0x00, sizeof(struct time_ctx));
 	tm.twi = twi_ctx;
 
 	// disable interrupts temporary & 
@@ -90,7 +90,13 @@ void main(void) {
 		volatile uint8_t buttons = 0;		
 
 		// perform temperature measurement
-		tmp_update_measurements(&temp);
+		tmp_update_measurements(twi_ctx, &temp);
+
+		// reset temperature if both plus and minus are pressed
+		if (E_EVENT_BUTTON_PM == event) {
+			tmp_reset(&temp.msr);
+			rtc_store_temperatures(twi_ctx,(struct temp_msr_ctx *)&temp.msr);
+		}
 
 		// update measurement on interrupt
 		if (E_EVENT_1HZ == event) {
@@ -102,8 +108,6 @@ void main(void) {
 					E_TWI_BIT_SEND_STOP);
 			while (twi_ctx->status & E_TWI_BIT_BUSY);
 
-			// save temperatures
-			rtc_store_temperatures(twi_ctx,(struct temp_msr_ctx *)&temp.msr);
 			continue;
 		}
 

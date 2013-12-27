@@ -13,7 +13,7 @@
 
 // one wire thermometer setup
 #define OW_PORT PORTB
-#define OW_PIN 4
+#define OW_PIN 0
 
 
 // lcd io lines setup

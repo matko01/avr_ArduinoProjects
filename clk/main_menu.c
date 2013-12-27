@@ -360,7 +360,24 @@ static void menu_set_date(void *pd, uint8_t a_event) {
 
 
 static void menu_reset_temperature(void *pd, uint8_t a_event) {
-	// TODO implement me
+	static uint8_t cnt = 30;
+	struct fsm_pd *fpd = (struct fsm_pd *)pd;
+
+	if (E_EVENT_BUTTON_OK == a_event) {
+		tmp_reset(&fpd->temp->msr);
+		rtc_store_temperatures(fpd->tm->twi,(struct temp_msr_ctx *)&fpd->temp->msr);
+		return;
+	}
+
+	sprintf((char *)fpd->lcd->display[1], "  TEMP. ZEROED  ");
+	_delay_ms(100);
+	cnt--;
+
+	if (!cnt--) {
+		// press OK for the user :)
+		cnt = 30;
+		fsm_event_push(fpd->eq, E_EVENT_BUTTON_OK);
+	}
 }
 
 

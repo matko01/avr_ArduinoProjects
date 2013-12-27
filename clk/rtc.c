@@ -22,7 +22,7 @@ void rtc_setup(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr) {
 		common_zero_mem(data,len);
 
 		// TODO temporary changed, should be 0x80 - HALTED
-		data[1] = 0x00; // clock halted
+		data[1] = 0x80; // clock halted
 
 		data[1 + DS1307_DOW_ADDR] = 1;
 		data[1 + DS1307_DOM_ADDR] = 1;
@@ -35,6 +35,9 @@ void rtc_setup(volatile struct twi_ctx *a_ctx, struct temp_msr_ctx *msr) {
 		while (a_ctx->status & E_TWI_BIT_BUSY);
 
 		rtc_store_temperatures(a_ctx, msr);
+	}
+	else {
+		rtc_restore_temperatures(a_ctx, msr);
 	}
 }
 
