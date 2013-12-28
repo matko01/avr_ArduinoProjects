@@ -124,8 +124,8 @@ void main(void) {
 			fsm_event_push(&fsm.eq, 0x10 + buttons);
 		}
 
-		// poll every 10 ms (or even longer
+		// poll every 4 ms (or even longer
 		// when considering the processing time)
-		_delay_ms(10);
+		_delay_ms(4);
 	} // for
 }

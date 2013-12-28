@@ -22,13 +22,13 @@ uint8_t get_month_days(uint8_t month, uint8_t year) {
 
 uint16_t get_year_day(ds1307_time_t *tm) {
 	uint16_t day = 0;
-	int8_t i = tm->month;
+	int8_t i = BCD2BIN(tm->month);
 
 	while (--i) {
 		day += get_month_days(i, BCD2BIN(tm->year));
 	}
 
-	day += tm->dom;
+	day += BCD2BIN(tm->dom);
 	return day;
 }
 

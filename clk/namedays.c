@@ -58,8 +58,10 @@ const char day_54[] PROGMEM = "Macieja Marka";
 const char day_55[] PROGMEM = "Cezarego Donata";
 const char day_56[] PROGMEM = "Miroslawa Aleksandra";
 const char day_57[] PROGMEM = "Gabriela Anastazji";
-const char day_58[] PROGMEM = "Romana Ludomira";
+const char day_58[] PROGMEM = "Hilarego Romana Ludomira";
+
 const char day_59[] PROGMEM = "Antonii Augusta";
+
 const char day_60[] PROGMEM = "Albina Antoniego";
 const char day_61[] PROGMEM = "Heleny Halszki";
 const char day_62[] PROGMEM = "Maryny Kunegundy";
@@ -88,7 +90,8 @@ const char day_84[] PROGMEM = "Marioli Wienczyslawa";
 const char day_85[] PROGMEM = "Emanuela Larysy Teodora";
 const char day_86[] PROGMEM = "Lidii Ernesta";
 const char day_87[] PROGMEM = "Anieli Jana";
-const char day_88[] PROGMEM = "Viktoryna Helmuta";
+const char day_88[] PROGMEM = "Wiktoryna Stefana Cyryla";
+
 const char day_89[] PROGMEM = "Anieli Leonarda";
 const char day_90[] PROGMEM = "Beniamina Balbiny";
 const char day_91[] PROGMEM = "Grazyny Ireny";
@@ -122,6 +125,7 @@ const char day_118[] PROGMEM = "Pawla Walerii";
 const char day_119[] PROGMEM = "Rity Donaty";
 const char day_120[] PROGMEM = "Mariana Katarzyny";
 const char day_121[] PROGMEM = "Jozefa Jeremiasza";
+
 const char day_122[] PROGMEM = "Zygmunta Atanazego";
 const char day_123[] PROGMEM = "Marii Marioli";
 const char day_124[] PROGMEM = "Moniki Floriana";
@@ -336,6 +340,7 @@ const char day_332[] PROGMEM = "Leslawa Zdzislawa";
 const char day_333[] PROGMEM = "Blazeja Saturnina";
 const char day_334[] PROGMEM = "Maury Andrzeja";
 const char day_335[] PROGMEM = "Natalii Eligiusza";
+
 const char day_336[] PROGMEM = "Balbiny Bibianny";
 const char day_337[] PROGMEM = "Franciszka Ksawerego";
 const char day_338[] PROGMEM = "Barbary Krystiana";
@@ -358,11 +363,12 @@ const char day_354[] PROGMEM = "Bogumily Dominika";
 const char day_355[] PROGMEM = "Tomasza Tomislawa";
 const char day_356[] PROGMEM = "Zenona Honoraty";
 const char day_357[] PROGMEM = "Wiktorii Slawomiry";
+
 const char day_358[] PROGMEM = "Adama Ewy";
-const char day_359[] PROGMEM = "Anastazji Eualii";
-const char day_360[] PROGMEM = "Jana Zanety";
-const char day_361[] PROGMEM = "Teofili Godzislawa";
-const char day_362[] PROGMEM = "Jana Maksyma";
+const char day_359[] PROGMEM = "Eugenii Mateusza Piotra";
+const char day_360[] PROGMEM = "Dionizego Szczepana";
+const char day_361[] PROGMEM = "Jana Maksyma Bartlomieja";
+const char day_362[] PROGMEM = "Antonii Teofila";
 const char day_363[] PROGMEM = "Dawida Tomasza";
 const char day_364[] PROGMEM = "Irminy Eugeniusza";
 const char day_365[] PROGMEM = "Melanii Sylwestra";

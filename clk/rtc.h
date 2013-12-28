@@ -10,7 +10,7 @@
 /**
  * @brief settings magic identifier
  */
-#define RTC_MAGIC_ID 0x13
+#define RTC_MAGIC_ID 0x14
 
 
 struct time_ctx {

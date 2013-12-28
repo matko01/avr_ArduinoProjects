@@ -55,15 +55,16 @@ void tmp_update_measurements(volatile struct twi_ctx *a_twi, volatile struct tem
 	if (0x0550==a_ctx->msr.temp) {
 		a_ctx->msr.temp = tmp;
 	}
+	else {
+		// update min/max values
+		a_ctx->msr.temp_min = a_ctx->msr.temp < a_ctx->msr.temp_min ? 
+			a_ctx->msr.temp : a_ctx->msr.temp_min;
+		a_ctx->msr.temp_max = a_ctx->msr.temp > a_ctx->msr.temp_max ?
+			a_ctx->msr.temp : a_ctx->msr.temp_max;
 
-	// update min/max values
-	a_ctx->msr.temp_min = a_ctx->msr.temp < a_ctx->msr.temp_min ? 
-		a_ctx->msr.temp : a_ctx->msr.temp_min;
-	a_ctx->msr.temp_max = a_ctx->msr.temp > a_ctx->msr.temp_max ?
-		a_ctx->msr.temp : a_ctx->msr.temp_max;
-
-	// save temperatures in RTC
-	rtc_store_temperatures(a_twi,(struct temp_msr_ctx *)&a_ctx->msr);
+		// save temperatures in RTC
+		rtc_store_temperatures(a_twi,(struct temp_msr_ctx *)&a_ctx->msr);
+	}
 
 	a_ctx->msr.state = TEMP_MEASUREMENT_IDLE;
 }

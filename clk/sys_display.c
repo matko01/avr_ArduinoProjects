@@ -91,7 +91,7 @@ void display_nameday(struct lcd_ctx *a_lcd, ds1307_time_t *tm) {
 
 	// make an index correction for non leap years
 	// since the FLASH table includes the leap year name-day as well
-	if (!is_leap_year(tm->year) && yd >= 59) { // first of march
+	if (!is_leap_year(BCD2BIN(tm->year)) && yd >= 59) { // first of march
 		// increment the index to ommit the leap year extra day
 		yd++;		
 	}
