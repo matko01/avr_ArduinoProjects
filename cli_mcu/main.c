@@ -39,6 +39,12 @@ static void fh_argc(void *a_data) {
 
 
 int main(int argc, char const *argv[]) {
+
+	serial_init(E_BAUD_9600);	
+	serial_install_interrupts(E_FLAGS_SERIAL_RX_INTERRUPT);
+	serial_flush();
+	serial_install_stdio();
+
 	t_cli_ctx cli_ctx;
 	cli_init(&cli_ctx, g_cmds);
 	while (1) {
