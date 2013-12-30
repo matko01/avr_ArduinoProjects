@@ -27,7 +27,8 @@ static void _cli_none(void *a_data __attribute__((unused)));
  */
 static t_multicode_cmd _g_mc_cmds[] = {
 
-	{ { 0x1b, 0x5b, 0x44 }, 3, _cli_delete },
+	{ { 0x1b, 0x5b, 0x44 }, 3, _cli_delete }, // left arrow
+	{ { 0x1b, 0x5b, 0x33, 0x7e }, 4, _cli_delete }, // delete
 	{ { 0x1b, 0x5b, 0x43 }, 3, _cli_none },
 
 	{ { 0x1b, 0x5b, 0x41 }, 3, _cli_history_up },
@@ -76,7 +77,6 @@ void cli_read(t_cli_ctx *a_ctx) {
 	/// char by char matching
 	switch(i) {
 		case KEY_CODE_BACKSPACE: // backspace
-		case KEY_CODE_DELETE: // del
 			_cli_delete((void *)a_ctx);
 			break;
 

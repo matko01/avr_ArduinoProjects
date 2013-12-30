@@ -20,17 +20,13 @@
 /**
  * @brief key code for backspace
  */
-#define KEY_CODE_BACKSPACE 0x7f
+#define KEY_CODE_BACKSPACE 0x08
 
-/**
- * @brief key code for delete key
- */
-#define KEY_CODE_DELETE 0x7e
 
 /**
  * @brief key code for enter key
  */
-#define KEY_CODE_ENTER 0x0a
+#define KEY_CODE_ENTER 0x0d
 
 /**
  * @brief key code for escape key
