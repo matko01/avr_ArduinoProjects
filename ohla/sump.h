@@ -1,12 +1,14 @@
 #ifndef SUMP_H_GT2BR81O
 #define SUMP_H_GT2BR81O
 
+// 1 byte (short) commands 
 #define SUMP_RESET 0x00
 #define SUMP_RUN 0x01
+#define SUMP_ID 0x02
 #define SUMP_XON 0x11
 #define SUMP_XOFF 0x13
 
-// 5 byte commands, first byte is unique for every command
+// 5 byte (long) commands, first byte is unique for every command
 #define SUMP_SET_TRIGGER_MASK 0xc0
 #define SUMP_SET_TRIGGER_VALUE 0xc1
 #define SUMP_SET_TRIGGER_CONF 0xc2
