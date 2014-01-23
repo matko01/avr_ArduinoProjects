@@ -31,8 +31,10 @@ void main(void) {
 #endif
 
 		if (long_cmd[0]) {
-			long_cmd[idx++] = input;
+
+			// collect the data
 			if (idx < 5) {
+				long_cmd[idx++] = input;
 				continue;
 			}
 
