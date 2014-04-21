@@ -7,47 +7,39 @@
 #include "main.h"
 #include "pca.h"
 
-#define SERIAL_CE PORTB0
-#define DATA_CONTROL PORTB1
-#define RESET PORTB2
-
-
-void lcd_write(uint8_t mode, uint8_t data) {
-	if (mode) 
-		PORTB |= _BV(DATA_CONTROL);
-	else
-		PORTB &= ~_BV(DATA_CONTROL);
-
-	PORTB &= ~_BV(SERIAL_CE);
-
-
-
-	PORTB |= _BV(SERIAL_CE);
-}
 
 
 int main(void)
 {
+	struct dev_pcd8544_ctx lcd;
 	uint16_t x = 84*6;
 
-	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F32);
-	
-	PORTB &= ~_BV(RESET);
-	_delay_ms(10);
-	PORTB |= _BV(RESET);
+	lcd.bus = &g_bus_spi_hw_poll;
 
-	 lcd_write(0, 0x21 );  // LCD Extended Commands.
-	 lcd_write(0, 0xB1 );  // Set LCD Vop (Contrast). 
-	 lcd_write(0, 0x04 );  // Set Temp coefficent. //0x04
-	 lcd_write(0, 0x14 );  // LCD bias mode 1:48. //0x13
-	 lcd_write(0, 0x0C );  // LCD in normal mode.
-	 lcd_write(0, 0x20 );
-	 lcd_write(0, 0x0C );
+	lcd.sce.port = &PORTB;
+	lcd.sce.pin = PORTB0;
 
-	while (x--) {
-		lcd_write(1, 0xaa);
-	}
+	lcd.dc.port = &PORTB;
+	lcd.dc.pin = PORTB1;
 
+	lcd.res.port = &PORTB;
+	lcd.res.pin = PORTB2;
+
+	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F8);
+	pcd8544_init(&lcd);
+	pcd8544_clrscr(&lcd);
+
+	pcd8544_write(&lcd, PCD8544_CMD, PCD8544_CMD_SET_X(0));
+	pcd8544_write(&lcd, PCD8544_CMD, PCD8544_CMD_SET_Y(0));
+
+	pcd8544_putc(&lcd, 'T');
+	pcd8544_putc(&lcd, 'o');
+	pcd8544_putc(&lcd, 'm');
+	pcd8544_putc(&lcd, 'e');
+	pcd8544_putc(&lcd, 'k');
+	/* while (x--) { */
+	/* 	pcd8544_write(&lcd, PCD8544_DATA, 0xaa); */
+	/* } */
 
 	while(1);
 	return 0;
