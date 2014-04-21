@@ -12,7 +12,8 @@
 int main(void)
 {
 	struct dev_pcd8544_ctx lcd;
-	uint16_t x = 84*6;
+	uint8_t buff[(PCD8544_W * PCD8544_H) >> 3] = {0x00};
+	uint8_t i = 0;
 
 	lcd.bus = &g_bus_spi_hw_poll;
 
@@ -25,22 +26,26 @@ int main(void)
 	lcd.res.port = &PORTB;
 	lcd.res.pin = PORTB2;
 
-	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F8);
+	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F4);
 	pcd8544_init(&lcd);
 	pcd8544_clrscr(&lcd);
+	pcd8544_install_stdout(&lcd);
 
-	pcd8544_write(&lcd, PCD8544_CMD, PCD8544_CMD_SET_X(0));
-	pcd8544_write(&lcd, PCD8544_CMD, PCD8544_CMD_SET_Y(0));
+	while(1) {
+		memset(buff, 0x00, sizeof(buff));
+		pcd8544_gotoxy(&lcd, 0, 0);
+		for (uint8_t x = 0; x<PCD8544_W; x++) {
+			for (uint8_t y = 0; y<PCD8544_H; ) {
+				if (!((x + i) & y)) PCD8544_SET_BIT_HIGH(buff, x, y);
+				y++;
 
-	pcd8544_putc(&lcd, 'T');
-	pcd8544_putc(&lcd, 'o');
-	pcd8544_putc(&lcd, 'm');
-	pcd8544_putc(&lcd, 'e');
-	pcd8544_putc(&lcd, 'k');
-	/* while (x--) { */
-	/* 	pcd8544_write(&lcd, PCD8544_DATA, 0xaa); */
-	/* } */
+				if (!(y%8))
+				pcd8544_putpixel(&lcd, x, (y >> 3) - 1, buff[x + ((y >> 3) - 1)*84]);
+			}
+		}
+		i++;
+		_delay_ms(20);
+	}
 
-	while(1);
 	return 0;
 }
