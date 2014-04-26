@@ -9,7 +9,7 @@ CC=avr-gcc
 OBJC=avr-objcopy
 MCU=atmega328p
 CFLAGS=-I. -I$(PCA_PREFIX)/include/ -Wall -Os -DF_CPU=16000000UL -std=c99
-LDFLAGS=-lpca -L$(PCA_PREFIX)
+LDFLAGS=-lpca -L$(PCA_PREFIX) -lm
 
 ISPPORT=/dev/ttyACM0
 ISPDIR=/usr/share/arduino/hardware/tools
