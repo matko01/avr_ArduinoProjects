@@ -13,10 +13,12 @@
 int main(void)
 {
 	struct dev_pcd8544_ctx lcd;
+	struct bus_t spi_bus;
 	uint8_t buff = 0;
 	uint8_t i = 0;
 
-	lcd.bus = &g_bus_spi_hw_poll;
+	spi_bus = spi_hw_poll_bus_get();
+	lcd.bus = &spi_bus;
 
 	lcd.sce.port = &PORTB;
 	lcd.sce.pin = PORTB0;
@@ -27,7 +29,7 @@ int main(void)
 	lcd.res.port = &PORTB;
 	lcd.res.pin = PORTB2;
 
-	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F2);
+	spi_hw_poll_init(E_SPI_MODE_MASTER, E_SPI_SPEED_F4);
 	pcd8544_init(&lcd);
 	pcd8544_clrscr(&lcd);
 	pcd8544_install_stdout(&lcd);
