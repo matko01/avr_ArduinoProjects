@@ -1,6 +1,7 @@
 TARGET=ohla
 SOURCES= \
-		 main.c
+		 main.c \
+		 sump.c
 
 DEPS=
 COBJ=$(SOURCES:.c=.o)

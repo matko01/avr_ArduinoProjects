@@ -2,6 +2,7 @@
 #define __MAIN_H__
 
 #include "pca.h"
+#include "defines.h"
 
 /**
  * @brief main prototype (in order to avoid returing a value)
