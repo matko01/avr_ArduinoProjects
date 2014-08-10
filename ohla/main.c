@@ -25,8 +25,8 @@ struct trigger {
 	} conf;
 };
 
+
 struct settings {
-	struct trigger t;
 	uint32_t divider;
 	uint16_t delay_cnt;
 	uint16_t read_cnt;
@@ -44,12 +44,37 @@ struct settings {
 };
 
 
+struct analyzer {
+	struct settings s;
+	struct trigger t;
+	uint8_t data[1024];
+};
+
+
+
+#include <util/delay.h>
+
+void acquire_data(struct analyzer *a) {
+	
+	uint16_t i = 0;
+
+	for (i = 0; i < 512; i++) {
+		a->data[i] = i;
+	}
+	
+	serial_poll_send(a->data, a->s.read_cnt);
+}
+
+
+void analyzer_init(struct analyzer *a) {
+	memset(a, 0x00, sizeof(struct analyzer));
+	a.s.read_cnt = DEVICE_READ_COUNT;
+}
 
 
 void main(void) {
-
 	uint8_t input = 0x00;
-	uint8_t data[512];
+	struct analyzer a;
 
 	// initialize serial port
 	serial_init(SERIAL_SPEED);	
@@ -86,13 +111,7 @@ void main(void) {
 				break;
 
 			case SUMP_RUN:
-				for (uint8_t i = 0; i < 512; i++) {
-					data[i++] = PINC;
-				}
-
-				for (uint8_t i = 0; i<128; i++) {
-					printf("1234");
-				}
+				acquire_data(&a);
 				break;
 
 			case SUMP_XON:
@@ -101,13 +120,19 @@ void main(void) {
 			case SUMP_XOFF:
 				break;
 
-				
-
 			case SUMP_SET_TRIGGER_MASK:
 			case SUMP_SET_TRIGGER_VALUE:
 			case SUMP_SET_TRIGGER_CONF:
 			case SUMP_SET_DIVIDER:
+				break;
+
 			case SUMP_SET_READY_DELAY_COUNT:
+				serial_recv(&a.s.read_cnt, 2, 1);
+				serial_recv(&a.s.delay_cnt, 2, 1);
+				a.s.read_cnt = (a.s.read_cnt + 1) * 4;
+				a.s.delay_cnt = (a.s.delay_cnt + 1) * 4;
+				break;
+
 			case SUMP_SET_FLAGS:
 				break;
 
